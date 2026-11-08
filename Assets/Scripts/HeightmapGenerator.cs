@@ -1,31 +1,33 @@
-using Unity.VisualScripting;
 using UnityEngine;
 
 public class HeightmapGenerator
 {
     private readonly MapSize _mapSize;
     private readonly MapGenerationData _generationData;
-    private readonly Vector3 _startingPoint;
+    private readonly Noise _noise;
 
-    public HeightmapGenerator(MapSize maxSize, Vector3 startingPoint, MapGenerationData generationData)
+    public HeightmapGenerator(MapSize maxSize, MapGenerationData generationData, Noise noise)
     {
         _mapSize = maxSize;
-        _startingPoint = startingPoint;
         _generationData = generationData;
+        _noise = noise;
     }
 
-    public float[,] GetMap(bool centerAroundStartingPoint = true)
+    public float[,] GetMap()
     {
-        float[,] heightMap = new float[_mapSize.Width, _mapSize.Length];
+        int width = _mapSize.Width + 1;
+        int depth = _mapSize.Depth + 1;
 
-        for (int x = 0; x < _mapSize.Width; x++)
+        float[,] heightMap = new float[width, depth];
+
+        for (int x = 0; x < width; x++)
         {
-            for (int z = 0; z < _mapSize.Length; z++)
+            for (int z = 0; z < depth; z++)
             {
-                float xNorm = (float)x / _mapSize.Width * _generationData.HeightFrequency; 
-                float zNorm = (float)z / _mapSize.Length * _generationData.HeightFrequency; 
+                float xNorm = (float)x / width * _generationData.NoiseFrequency; 
+                float zNorm = (float)z / depth * _generationData.NoiseFrequency; 
 
-                float y = Mathf.Clamp01(Mathf.PerlinNoise(xNorm, zNorm)) * _mapSize.MaxHeight;
+                float y = Mathf.Clamp01(_noise.Evaluate(xNorm, zNorm)) * _mapSize.MaxHeight;
 
                 heightMap[x, z] = y;
             }

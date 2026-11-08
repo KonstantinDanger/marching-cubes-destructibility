@@ -10,6 +10,8 @@ public class Bootstrap : MonoBehaviour
     [SerializeField] private MapSize _mapSize;
     [SerializeField] private Image _heightMapImage;
     [SerializeField] private MapGenerationData _generationData;
+    [SerializeField] private Noise _noise;
+    [SerializeField] private Material _baseGroundMaterial;
 
     private List<GameObject> _gridPreview = new();
     private Texture2D _texture;
@@ -32,10 +34,10 @@ public class Bootstrap : MonoBehaviour
             Destroy(item);
         }
 
-        HeightmapGenerator heightmapGenerator = new(_mapSize, _mapPivot.position, _generationData);
-        MeshGenerator meshGenerator = new(_mapPivot.gameObject);
+        HeightmapGenerator heightmapGenerator = new(_mapSize, _generationData, _noise);
+        MeshGenerator meshGenerator = new(_mapPivot.gameObject, _mapSize, _baseGroundMaterial);
 
-        float[,] heightMap = heightmapGenerator.GetMap(centerAroundStartingPoint: true);
+        float[,] heightMap = heightmapGenerator.GetMap();
 
         _texture = GetHeightMapImage(heightMap);
 
@@ -56,11 +58,22 @@ public class Bootstrap : MonoBehaviour
 
                 GameObject go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
                 go.name = $"Dummy vertice [{x}, {y}, {z}]";
+                go.transform.parent = _mapPivot;
                 Color color = Color.red;
                 color.a = 0.3f;
                 go.GetComponent<MeshRenderer>().material.color = color;
                 go.transform.localScale /= 5;
                 go.transform.position = new(x,y,z);
+
+                if(go.TryGetComponent(out Collider col))
+                    Destroy(col);
+
+                if (go.TryGetComponent(out MeshRenderer renderer))
+                {
+                    renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                    renderer.receiveShadows = false;
+                }
+
                 _gridPreview.Add(go);
             }
         }

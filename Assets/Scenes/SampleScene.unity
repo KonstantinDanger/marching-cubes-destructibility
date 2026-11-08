@@ -636,6 +636,8 @@ MonoBehaviour:
   _mapSize: {fileID: 11400000, guid: 68b90cbcbc893b9468b3da3785e893f1, type: 2}
   _heightMapImage: {fileID: 517835671}
   _generationData: {fileID: 11400000, guid: 3bbde75b155bbea4c96d04201c787062, type: 2}
+  _noise: {fileID: 11400000, guid: add48a2114ae8bd49941ae395c2ea431, type: 2}
+  _baseGroundMaterial: {fileID: 2100000, guid: 9d095a8cfee0045479757535f13d8e8a, type: 2}
 --- !u!4 &1548112314
 Transform:
   m_ObjectHideFlags: 0
