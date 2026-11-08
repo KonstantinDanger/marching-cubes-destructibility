@@ -5,6 +5,8 @@ public class MeshGenerator
 {
     private readonly GameObject _meshHolder;
 
+    private Mesh _cached;
+
     public MeshGenerator(GameObject meshHolder)
     {
         _meshHolder = meshHolder;
@@ -25,40 +27,80 @@ public class MeshGenerator
         filter.mesh = GenerateMesh(heightMap);
     }
 
-    private static Mesh GenerateMesh(float[,] heightMap)
+    private Mesh GenerateMesh(float[,] heightMap)
     {
-        Mesh mesh = new();
+        if (_cached != null)
+            _cached.Clear();
 
-        const int len = 10;
+        _cached = new();
+
         List<Vector3> vertices = new();
         List<int> triangles = new();
+        List<Vector2> uv = new();
 
-        for (int i = 0; i < len; i++)
+        int width = heightMap.GetLength(0);
+        int depth = heightMap.GetLength(1);
+
+        int counter = 0;
+
+        for (int x = 0; x < width; x++)
         {
-            vertices.Add(new(i, 0, 0));
-            vertices.Add(new(i, 0, 1));
+            for (int z = 0; z < depth; z++)
+            {
+                float y = heightMap[x, z];
+                vertices.Add(new Vector3(x, y, z));
 
-            vertices.Add(new(i + 1, 0, 0));
-            vertices.Add(new(i + 1, 0, 1));
+                uv.Add(new((float)x / width - 1, (float)z / depth - 1));
+            }
         }
 
-        for (int i = 0; i < len; i++)
+        for (int x = 0; x < width - 1; x++)
         {
-            int offsetStep = i * 4;
-            triangles.Add(offsetStep);
-            triangles.Add(1 + offsetStep);
-            triangles.Add(2 + offsetStep);
-
-            triangles.Add(2 + offsetStep);
-            triangles.Add(1 + offsetStep);
-            triangles.Add(3 + offsetStep);
+            for (int z = 0; z < depth - 1; z++)
+            { 
+                SetTriangle(triangles, x * depth + z, depth);
+                counter++;
+            }
         }
 
-        mesh.vertices = vertices.ToArray();
-        mesh.triangles = triangles.ToArray();
+        //for (int i = 0; i < len; i++)
+        //{
+        //    SetVertice(vertices, i);
+        //}
 
-        mesh.RecalculateNormals();
-        mesh.RecalculateBounds();
-        return mesh;
+        //for (int i = 0; i < len; i++)
+        //{
+        //    SetTriangle(triangles, i);
+        //}
+
+        _cached.vertices = vertices.ToArray();
+        _cached.triangles = triangles.ToArray();
+        _cached.uv = uv.ToArray();
+
+        _cached.RecalculateNormals();
+        _cached.RecalculateBounds();
+        _cached.Optimize();
+        _cached.OptimizeReorderVertexBuffer();
+        return _cached;
+    }
+
+    private static void SetTriangle(List<int> triangles, int i, int depth)
+    {
+        triangles.Add(i);
+        triangles.Add(i + 1);
+        triangles.Add(i + depth);
+
+        triangles.Add(i + depth);
+        triangles.Add(i + 1);
+        triangles.Add(i + depth + 1);
+    }
+
+    private static void SetVertice(List<Vector3> vertices, int x, int z, float y)
+    {
+        vertices.Add(new(x, y, 0));
+        vertices.Add(new(x, y, z + 1));
+
+        vertices.Add(new(x + 1, y, 0));
+        vertices.Add(new(x + 1, y, z + 1));
     }
 }
