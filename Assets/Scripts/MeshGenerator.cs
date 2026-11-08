@@ -8,10 +8,6 @@ public class MeshGenerator
     private readonly MapSize _mapSize;
     private readonly Material _baseMaterial;
 
-    private Mesh _mesh;
-
-    //private List<GameObject> _chunks = new();
-
     public MeshGenerator(GameObject meshHolder, MapSize mapSize, Material baseMaterial)
     {
         _meshHolder = meshHolder;
@@ -21,21 +17,6 @@ public class MeshGenerator
 
     public void Generate(float[,] heightMap)
     {
-        //if (!_meshHolder.TryGetComponent(out MeshRenderer _))
-        //{
-        //    _meshHolder.AddComponent<MeshRenderer>();
-        //}
-
-        //if (!_meshHolder.TryGetComponent(out MeshFilter filter))
-        //{
-        //    filter = _meshHolder.AddComponent<MeshFilter>();
-        //}
-
-        GenerateMesh(heightMap);
-    }
-
-    private void GenerateMesh(float[,] heightMap)
-    {
         for (int x = 0; x < _mapSize.Width; x += _mapSize.ChunkWidth)
         {
             for (int z = 0; z < _mapSize.Depth; z += _mapSize.ChunkDepth)
@@ -43,109 +24,18 @@ public class MeshGenerator
                 CreateChunk(heightMap, x, z);
             }
         }
-
-        ////if (_mesh != null)
-        ////    _mesh.Clear();
-
-        ////_mesh = new();
-
-        ////List<Vector3> vertices = new();
-        ////List<int> triangles = new();
-        ////List<Vector2> uv = new();
-
-        ////int width = heightMap.GetLength(0);
-        ////int depth = heightMap.GetLength(1);
-
-        ////for (int x = 0; x < width; x++)
-        ////{
-        ////    for (int z = 0; z < depth; z++)
-        ////    {
-        ////        float y = heightMap[x, z];
-        ////        vertices.Add(new Vector3(x, y, z));
-
-        ////        uv.Add(new((float)x / width - 1, (float)z / depth - 1));
-        ////    }
-        ////}
-
-        ////for (int x = 0; x < width - 1; x++)
-        ////{
-        ////    for (int z = 0; z < depth - 1; z++)
-        ////    {
-        ////        SetTriangle(triangles, x * depth + z, depth);
-        ////    }
-        ////}
-
-        ////_mesh.vertices = vertices.ToArray();
-        ////_mesh.triangles = triangles.ToArray();
-        ////_mesh.uv = uv.ToArray();
-
-        ////_mesh.RecalculateNormals();
-        ////_mesh.RecalculateBounds();
-        ////_mesh.Optimize();
-        ////_mesh.OptimizeReorderVertexBuffer();
-
-        ////if (!_meshHolder.TryGetComponent(out MeshCollider collider))
-        ////{
-        ////    collider = _meshHolder.AddComponent<MeshCollider>();
-        ////    collider.sharedMesh = _mesh;
-        ////}
-
-        ////CreateChunck(heightMap);
-
-        //return _mesh;
-        ////if (_mesh != null)
-        ////    _mesh.Clear();
-
-        ////_mesh = new();
-
-        ////List<Vector3> vertices = new();
-        ////List<int> triangles = new();
-        ////List<Vector2> uv = new();
-
-        ////int width = heightMap.GetLength(0);
-        ////int depth = heightMap.GetLength(1);
-
-        ////for (int x = 0; x < width; x++)
-        ////{
-        ////    for (int z = 0; z < depth; z++)
-        ////    {
-        ////        float y = heightMap[x, z];
-        ////        vertices.Add(new Vector3(x, y, z));
-
-        ////        uv.Add(new((float)x / width - 1, (float)z / depth - 1));
-        ////    }
-        ////}
-
-        ////for (int x = 0; x < width - 1; x++)
-        ////{
-        ////    for (int z = 0; z < depth - 1; z++)
-        ////    {
-        ////        SetTriangle(triangles, x * depth + z, depth);
-        ////    }
-        ////}
-
-        ////_mesh.vertices = vertices.ToArray();
-        ////_mesh.triangles = triangles.ToArray();
-        ////_mesh.uv = uv.ToArray();
-
-        ////_mesh.RecalculateNormals();
-        ////_mesh.RecalculateBounds();
-        ////_mesh.Optimize();
-        ////_mesh.OptimizeReorderVertexBuffer();
-
-        ////if (!_meshHolder.TryGetComponent(out MeshCollider collider))
-        ////{
-        ////    collider = _meshHolder.AddComponent<MeshCollider>();
-        ////    collider.sharedMesh = _mesh;
-        ////}
-
-        ////CreateChunck(heightMap);
-
-        //return _mesh;
     }
 
     private void CreateChunk(float[,] heightMap, int startingX, int startingZ)
     {
+        Transform chunksContainer = _meshHolder.transform.Find("Chunks");
+
+        if (!chunksContainer)
+        {
+            chunksContainer = new GameObject("Chunks").transform;
+            chunksContainer.parent = _meshHolder.transform;
+        }
+
         Mesh mesh = new();
         GameObject chunkHolder = new("Chunk holder", new Type[]
         {
@@ -153,6 +43,8 @@ public class MeshGenerator
             typeof(MeshFilter),
             typeof(MeshCollider)
         });
+
+        chunkHolder.transform.parent = chunksContainer;
 
         List<Vector3> vertices = new();
         List<int> triangles = new();
@@ -170,8 +62,8 @@ public class MeshGenerator
                 vertices.Add(new Vector3(x, y, z));
 
                 uv.Add(new Vector2(
-                    (float)x / (finalPosX - 1), 
-                    (float)z / (finalPosZ - 1)));
+                    (float)(x - startingX) / (_mapSize.ChunkWidth), 
+                    (float)(z - startingZ) / (_mapSize.ChunkWidth)));
             }
         }
 

@@ -44,12 +44,15 @@ public class Bootstrap : MonoBehaviour
         _heightMapImage.material.mainTexture = _texture;
         _heightMapImage.SetMaterialDirty();
 
-        SpawnDummyPointForHeightMap(heightMap);
+        SpawnDummyPointsForHeightMap(heightMap);
         meshGenerator.Generate(heightMap);
     }
 
-    private void SpawnDummyPointForHeightMap(float[,] heightMap)
+    private void SpawnDummyPointsForHeightMap(float[,] heightMap)
     {
+        GameObject holder = new("Points holder");
+        holder.transform.parent = _mapPivot;
+
         for (int x = 0; x < heightMap.GetLength(0); x++)
         {
             for (int z = 0; z < heightMap.GetLength(1); z++)
@@ -58,7 +61,7 @@ public class Bootstrap : MonoBehaviour
 
                 GameObject go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
                 go.name = $"Dummy vertice [{x}, {y}, {z}]";
-                go.transform.parent = _mapPivot;
+                go.transform.parent = holder.transform;
                 Color color = Color.red;
                 color.a = 0.3f;
                 go.GetComponent<MeshRenderer>().material.color = color;

@@ -205,13 +205,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 330585543}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1, z: 0}
+  m_LocalRotation: {x: 0.10591423, y: -0.70393795, z: 0.1074222, w: 0.69405615}
+  m_LocalPosition: {x: 81.38602, y: 27.038033, z: 29.3864}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 17.353, y: -90.81, z: 0}
 --- !u!114 &330585547
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -452,6 +452,54 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 517835669}
   m_CullTransparentMesh: 1
+--- !u!1 &802585196
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 802585198}
+  - component: {fileID: 802585197}
+  m_Layer: 0
+  m_Name: BrushHandler
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &802585197
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 802585196}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9bdbe9d086d353d41b085274d0cba02c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _holdUpdateTime: 0.1
+  _brushRange: 4.4
+  _loweringStrength: 2
+  _raisingStrength: 1.78
+--- !u!4 &802585198
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 802585196}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -76.1593, y: -127.5279, z: -83.81985}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &832575517
 GameObject:
   m_ObjectHideFlags: 0
@@ -636,7 +684,7 @@ MonoBehaviour:
   _mapSize: {fileID: 11400000, guid: 68b90cbcbc893b9468b3da3785e893f1, type: 2}
   _heightMapImage: {fileID: 517835671}
   _generationData: {fileID: 11400000, guid: 3bbde75b155bbea4c96d04201c787062, type: 2}
-  _noise: {fileID: 11400000, guid: add48a2114ae8bd49941ae395c2ea431, type: 2}
+  _noise: {fileID: 11400000, guid: 100b4562ccd5dde498f28f2b26d3d8d8, type: 2}
   _baseGroundMaterial: {fileID: 2100000, guid: 9d095a8cfee0045479757535f13d8e8a, type: 2}
 --- !u!4 &1548112314
 Transform:
@@ -823,6 +871,7 @@ SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
   - {fileID: 1548112314}
+  - {fileID: 802585198}
   - {fileID: 330585546}
   - {fileID: 410087041}
   - {fileID: 832575519}
