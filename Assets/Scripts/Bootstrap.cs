@@ -27,12 +27,13 @@ public class Bootstrap : MonoBehaviour
 
     private void InitializeGeneration()
     {
-        foreach (var item in _gridPreview)
-        {
-            Destroy(item);
-        }
+        //foreach (var item in _gridPreview)
+        //{
+        //    Destroy(item);
+        //}
 
         HeightmapGenerator heightmapGenerator = new(_mapSize, _mapPivot.position, _generationData);
+        MeshGenerator meshGenerator = new(_mapPivot.gameObject);
 
         float[,] heightMap = heightmapGenerator.GetMap(centerAroundStartingPoint: true);
 
@@ -41,7 +42,8 @@ public class Bootstrap : MonoBehaviour
         _heightMapImage.material.mainTexture = _texture;
         _heightMapImage.SetMaterialDirty();
 
-        SpawnDummyPointForHeightMap(heightMap);
+        //SpawnDummyPointForHeightMap(heightMap);
+        meshGenerator.Generate(heightMap);
     }
 
     private void SpawnDummyPointForHeightMap(float[,] heightMap)
