@@ -18,12 +18,8 @@ public class MeshGenerator
     public void Generate(float[,] heightMap)
     {
         for (int x = 0; x < _mapSize.Width; x += _mapSize.ChunkWidth)
-        {
             for (int z = 0; z < _mapSize.Depth; z += _mapSize.ChunkDepth)
-            {
                 CreateChunk(heightMap, x, z);
-            }
-        }
     }
 
     private void CreateChunk(float[,] heightMap, int startingX, int startingZ)
@@ -37,12 +33,8 @@ public class MeshGenerator
         }
 
         Mesh mesh = new();
-        GameObject chunkHolder = new("Chunk holder", new Type[]
-        {
-            typeof(MeshRenderer),
-            typeof(MeshFilter),
-            typeof(MeshCollider)
-        });
+        GameObject chunkHolder = new("Chunk holder");
+        Chunk chunk = chunkHolder.AddComponent<Chunk>();
 
         chunkHolder.transform.parent = chunksContainer;
 
@@ -62,7 +54,7 @@ public class MeshGenerator
                 vertices.Add(new Vector3(x, y, z));
 
                 uv.Add(new Vector2(
-                    (float)(x - startingX) / (_mapSize.ChunkWidth), 
+                    (float)(x - startingX) / (_mapSize.ChunkWidth),
                     (float)(z - startingZ) / (_mapSize.ChunkWidth)));
             }
         }
@@ -87,9 +79,7 @@ public class MeshGenerator
         mesh.Optimize();
         mesh.OptimizeReorderVertexBuffer();
 
-        chunkHolder.GetComponent<MeshCollider>().sharedMesh = mesh;
-        chunkHolder.GetComponent<MeshFilter>().mesh = mesh;
-        chunkHolder.GetComponent<MeshRenderer>().material = _baseMaterial;
+        chunk.Initialize(heightMap, mesh, _baseMaterial);
     }
 
     private static void SetTriangle(List<int> triangles, int i, int depth)
