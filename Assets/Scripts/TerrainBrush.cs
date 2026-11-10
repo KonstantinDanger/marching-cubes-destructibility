@@ -43,35 +43,39 @@ public class TerrainBrush : MonoBehaviour
 
         if(Input.GetKey(KeyCode.Mouse1))
         {
-            Vector3[] selectedVertices = SelectVertices(ray, out Chunk chunk, out int[] indices);
+            Vector3[] selectedVertices = SelectVertices(ray, out Chunk chunk);
 
             if (selectedVertices == null)
                 return;
 
             for (int i = 0; i < selectedVertices.Length; i++)
-                chunk.ModifyHeight(indices[i], -_loweringStrength);
+            {
+                Vector3 selectedPos = selectedVertices[i];
+                chunk.ModifyVertexHeight(selectedPos.x, selectedPos.z, -_loweringStrength, this);
+            }
 
             ResetTimer();
         }
 
         if (Input.GetKey(KeyCode.Mouse0))
         {
-            Vector3[] selectedVertices = SelectVertices(ray, out Chunk chunk, out int[] indices);
+            Vector3[] selectedVertices = SelectVertices(ray, out Chunk chunk);
 
             if (selectedVertices == null)
                 return;
 
             for (int i = 0; i < selectedVertices.Length; i++)
-                chunk.ModifyHeight(indices[i], _raisingStrength);
+            {
+                Vector3 selectedPos = selectedVertices[i];
+                chunk.ModifyVertexHeight(selectedPos.x, selectedPos.z, _raisingStrength, this);
+            }
 
             ResetTimer();
         }
     }
 
-    private Vector3[] SelectVertices(Ray ray, out Chunk chunk, out int[] indices)
+    private Vector3[] SelectVertices(Ray ray, out Chunk chunk)
     {
-        List<int> indicesList = new();
-        indices = null;
         chunk = null;
 
         if (!Physics.Raycast(ray, out RaycastHit hit))
@@ -93,13 +97,10 @@ public class TerrainBrush : MonoBehaviour
             if (distanceToVertice <= _brushRange)
             {
                 selected.Add(vertice);
-                indicesList.Add(index);
             }
 
             index++;
         }
-
-        indices = indicesList.ToArray();
 
         return selected.ToArray();
     }

@@ -12,4 +12,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 061b1a291aac40144ad6485cce4cbddc, type: 3}
   m_Name: MapGenerationData
   m_EditorClassIdentifier: 
-  <NoiseFrequency>k__BackingField: 9.6
+  <NoiseFrequency>k__BackingField: 1.06

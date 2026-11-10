@@ -7,6 +7,7 @@ public class MeshGenerator
     private readonly GameObject _meshHolder;
     private readonly MapSize _mapSize;
     private readonly Material _baseMaterial;
+    private readonly List<Chunk> _chunks = new();
 
     public MeshGenerator(GameObject meshHolder, MapSize mapSize, Material baseMaterial)
     {
@@ -17,26 +18,31 @@ public class MeshGenerator
 
     public void Generate(float[,] heightMap)
     {
-        for (int x = 0; x < _mapSize.Width; x += _mapSize.ChunkWidth)
-            for (int z = 0; z < _mapSize.Depth; z += _mapSize.ChunkDepth)
-                CreateChunk(heightMap, x, z);
-    }
+        Transform terrainObject = _meshHolder.transform.Find("Terrain");
 
-    private void CreateChunk(float[,] heightMap, int startingX, int startingZ)
-    {
-        Transform chunksContainer = _meshHolder.transform.Find("Chunks");
-
-        if (!chunksContainer)
+        if (!terrainObject)
         {
-            chunksContainer = new GameObject("Chunks").transform;
-            chunksContainer.parent = _meshHolder.transform;
+            terrainObject = new GameObject("Terrain").transform;
+            terrainObject.parent = _meshHolder.transform;
         }
 
+        ProceduralTerrain terrain = terrainObject.gameObject.AddComponent<ProceduralTerrain>();
+
+        for (int x = 0; x < _mapSize.Width; x += _mapSize.ChunkWidth)
+            for (int z = 0; z < _mapSize.Depth; z += _mapSize.ChunkDepth)
+                _chunks.Add(CreateChunk(heightMap, x, z, terrain, terrainObject));
+
+        terrain.Initialize(heightMap, _mapSize, _chunks);
+
+    }
+
+    private Chunk CreateChunk(float[,] heightMap, int startingX, int startingZ, ProceduralTerrain terrain, Transform terrainObject)
+    {
         Mesh mesh = new();
         GameObject chunkHolder = new("Chunk holder");
         Chunk chunk = chunkHolder.AddComponent<Chunk>();
 
-        chunkHolder.transform.parent = chunksContainer;
+        chunkHolder.transform.parent = terrainObject;
 
         List<Vector3> vertices = new();
         List<int> triangles = new();
@@ -62,11 +68,11 @@ public class MeshGenerator
         int chunkDepth = _mapSize.ChunkDepth;
         int chunkWidth = _mapSize.ChunkWidth;
 
-        for (int x = 0; x < chunkDepth; x++)
+        for (int x = 0; x < chunkWidth; x++)
         {
-            for (int z = 0; z < chunkWidth; z++)
+            for (int z = 0; z < chunkDepth; z++)
             {
-                SetTriangle(triangles, x * (chunkDepth + 1) + z, chunkDepth + 1);
+                SetTriangle(triangles, x * (chunkWidth + 1) + z, chunkDepth + 1);
             }
         }
 
@@ -79,7 +85,9 @@ public class MeshGenerator
         mesh.Optimize();
         mesh.OptimizeReorderVertexBuffer();
 
-        chunk.Initialize(heightMap, mesh, _baseMaterial);
+        chunk.Initialize(terrain, mesh, _baseMaterial);
+
+        return chunk;
     }
 
     private static void SetTriangle(List<int> triangles, int i, int depth)

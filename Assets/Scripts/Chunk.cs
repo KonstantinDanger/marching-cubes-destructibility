@@ -5,7 +5,8 @@ using UnityEngine;
 [DisallowMultipleComponent]
 public class Chunk : MonoBehaviour
 {
-    private float[,] _heightMap;
+    private ProceduralTerrain _terrain;
+
     private MeshCollider _meshCollider;
     private MeshRenderer _renderer;
     private MeshFilter _filter;
@@ -13,9 +14,9 @@ public class Chunk : MonoBehaviour
 
     public IReadOnlyList<Vector3> Vertices => _mesh.vertices;
 
-    public void Initialize(float[,] heightMap, Mesh mesh, Material baseMaterial)
+    public void Initialize(ProceduralTerrain terrain, Mesh mesh, Material baseMaterial)
     {
-        _heightMap = heightMap;
+        _terrain = terrain;
 
         _renderer = gameObject.AddComponent<MeshRenderer>();
         _meshCollider = gameObject.AddComponent<MeshCollider>();
@@ -27,16 +28,27 @@ public class Chunk : MonoBehaviour
         _renderer.material = baseMaterial;
     }
 
-    public void ModifyHeight(int vertexIndex, float heightAmount)
+    public void UpdateChunk(Vector3[] vertices)
     {
-        Vector3[] vertices = _mesh.vertices;
-        vertices[vertexIndex].y += heightAmount;
-
         _mesh.vertices = vertices;
         _mesh.RecalculateNormals();
         _mesh.RecalculateBounds();
 
         _meshCollider.sharedMesh = null;
         _meshCollider.sharedMesh = _mesh;
+    }
+
+    /// <summary>
+    /// Should NOT be called from terrain
+    /// </summary>
+    /// <param name="globalX"></param>
+    /// <param name="globalZ"></param>
+    /// <param name="heightAmount"></param>
+    public void ModifyVertexHeight(float globalX, float globalZ, float heightAmount, object sender)
+    {
+        if (sender.GetType() == typeof(ProceduralTerrain))
+            return;
+
+        _terrain.ModifyVertexHeight(globalX, globalZ, heightAmount);
     }
 }
