@@ -37,7 +37,7 @@ namespace Scripts.MarchingCubes
 
                         float noiseValue = _noise.Evaluate(xNorm * 0.99f, yNorm * 0.99f, zNorm * 0.99f);
                         float density = noiseValue > 0.5f ? 1 : 0;
-                        densityMap[(int)xNorm, (int)yNorm, (int)zNorm] = density;
+                        densityMap[x, y, z] = density;
                     }
                 }
             }
