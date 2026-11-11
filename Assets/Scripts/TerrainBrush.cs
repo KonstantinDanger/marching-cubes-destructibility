@@ -1,3 +1,4 @@
+using Scripts.Heightmap;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -43,7 +44,7 @@ public class TerrainBrush : MonoBehaviour
 
         if(Input.GetKey(KeyCode.Mouse1))
         {
-            Vector3[] selectedVertices = SelectVertices(ray, out Chunk chunk);
+            Vector3[] selectedVertices = SelectVertices(ray, out HeightmapChunk chunk);
 
             if (selectedVertices == null)
                 return;
@@ -59,7 +60,7 @@ public class TerrainBrush : MonoBehaviour
 
         if (Input.GetKey(KeyCode.Mouse0))
         {
-            Vector3[] selectedVertices = SelectVertices(ray, out Chunk chunk);
+            Vector3[] selectedVertices = SelectVertices(ray, out HeightmapChunk chunk);
 
             if (selectedVertices == null)
                 return;
@@ -74,7 +75,7 @@ public class TerrainBrush : MonoBehaviour
         }
     }
 
-    private Vector3[] SelectVertices(Ray ray, out Chunk chunk)
+    private Vector3[] SelectVertices(Ray ray, out HeightmapChunk chunk)
     {
         chunk = null;
 
@@ -114,7 +115,7 @@ public class TerrainBrush : MonoBehaviour
         Destroy(go, 3f);
     }
 
-    private Vector3 FindClosestVertice(Ray ray, out Chunk chunk, out int index)
+    private Vector3 FindClosestVertice(Ray ray, out HeightmapChunk chunk, out int index)
     {
         chunk = null;
         index = -1;
