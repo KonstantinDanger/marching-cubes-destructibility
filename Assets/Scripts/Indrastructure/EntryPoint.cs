@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 namespace Scripts.Infrastructure
@@ -5,6 +6,6 @@ namespace Scripts.Infrastructure
     [DisallowMultipleComponent]
     public abstract class EntryPoint : MonoBehaviour
     {
-        public abstract void Initialize();
+        public abstract IEnumerator Initialize();
     }
 }

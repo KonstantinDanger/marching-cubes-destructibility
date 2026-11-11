@@ -7,10 +7,10 @@ namespace Scripts.Heightmap
     public class ProceduralHeightMapTerrain : MonoBehaviour
     {
         private float[,] _heightMap;
-        private MapSize _mapSize;
+        private MapSize2D _mapSize;
         private List<HeightmapChunk> _chunks;
 
-        public void Initialize(float[,] heightMap, MapSize mapSize, List<HeightmapChunk> chunks)
+        public void Initialize(float[,] heightMap, MapSize2D mapSize, List<HeightmapChunk> chunks)
         {
             _heightMap = heightMap;
             _mapSize = mapSize;
@@ -40,7 +40,7 @@ namespace Scripts.Heightmap
             }
         }
 
-        private static List<HeightmapChunk> SelectChunks(List<HeightmapChunk> allChunks, MapSize mapSize, int globalX, int globalZ)
+        private static List<HeightmapChunk> SelectChunks(List<HeightmapChunk> allChunks, MapSize2D mapSize, int globalX, int globalZ)
         {
             List<HeightmapChunk> chunks = new();
 
@@ -61,7 +61,7 @@ namespace Scripts.Heightmap
             return chunks;
         }
 
-        private static void TryAddChunk(List<HeightmapChunk> allChunks, List<HeightmapChunk> chunks, MapSize mapSize, int globalX, int globalZ)
+        private static void TryAddChunk(List<HeightmapChunk> allChunks, List<HeightmapChunk> chunks, MapSize2D mapSize, int globalX, int globalZ)
         {
             int index = GetChunkIndex(mapSize, globalX, globalZ);
 
@@ -71,7 +71,7 @@ namespace Scripts.Heightmap
             chunks.Add(allChunks[index]);
         }
 
-        private static int GetChunkIndex(MapSize mapSize, int roundedX, int roundedZ)
+        private static int GetChunkIndex(MapSize2D mapSize, int roundedX, int roundedZ)
         {
             int chunkX = Mathf.FloorToInt(roundedX / mapSize.ChunkWidth);
             int chunkZ = Mathf.FloorToInt(roundedZ / mapSize.ChunkDepth);

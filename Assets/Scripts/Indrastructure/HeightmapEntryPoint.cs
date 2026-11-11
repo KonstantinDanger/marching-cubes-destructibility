@@ -1,4 +1,6 @@
+using Assets.Scripts.Indrastructure;
 using Scripts.Heightmap;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -10,18 +12,20 @@ namespace Scripts.Infrastructure
     public class HeightmapEntryPoint : EntryPoint
     {
         [SerializeField] private Transform _mapPivot;
-        [SerializeField] private MapSize _mapSize;
+        [SerializeField] private MapSize2D _mapSize;
         [SerializeField] private Image _heightMapImage;
         [SerializeField] private MapGenerationData _generationData;
-        [SerializeField] private Noise.Noise _noise;
+        [SerializeField] private Noise.Noise2D _noise;
         [SerializeField] private Material _baseGroundMaterial;
 
         private List<GameObject> _gridPreview = new();
         private Texture2D _texture;
 
-        public override void Initialize()
+        public override IEnumerator Initialize()
         {
             InitializeGeneration();
+
+            yield return null;
         }
 
         private void Update()
@@ -62,23 +66,14 @@ namespace Scripts.Infrastructure
                 {
                     float y = heightMap[x, z];
 
-                    GameObject go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-                    go.name = $"Dummy vertice [{x}, {y}, {z}]";
-                    go.transform.parent = holder.transform;
                     Color color = Color.red;
                     color.a = 0.3f;
-                    go.GetComponent<MeshRenderer>().material.color = color;
-                    go.transform.localScale /= 5;
-                    go.transform.position = new(x,y,z);
-
-                    if(go.TryGetComponent(out Collider col))
-                        Destroy(col);
-
-                    if (go.TryGetComponent(out MeshRenderer renderer))
-                    {
-                        renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-                        renderer.receiveShadows = false;
-                    }
+                    var go = Helpers.CreateDummyPointAt(
+                        new Vector3(x, y, z),
+                        0.2f,
+                        color,
+                        holder.transform,
+                         $"Heightmap vertice [{x}, {y}, {z}]");
 
                     _gridPreview.Add(go);
                 }
@@ -93,7 +88,7 @@ namespace Scripts.Infrastructure
             {
                 for (int z = 0; z < heightMap.GetLength(1); z++)
                 {
-                    float y = heightMap[x,z] / (float)_mapSize.MaxHeight;
+                    float y = heightMap[x,z] / (float)_mapSize.Height;
                     Color color = new (y, y, y, 1f);
                     texture.SetPixel(x, z, color);
                 }

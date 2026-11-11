@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 namespace Scripts.Infrastructure
@@ -7,9 +8,9 @@ namespace Scripts.Infrastructure
     {
         [SerializeField] private EntryPoint _entryPoint;
 
-        private void Start()
+        private IEnumerator Start()
         {
-            _entryPoint.Initialize();
+            yield return _entryPoint.Initialize();
         }
     }
 }

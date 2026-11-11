@@ -1,19 +1,19 @@
 using UnityEngine;
 using System;
 
-[CreateAssetMenu(menuName = "Map Size")]
-public class MapSize : ScriptableObject
+[CreateAssetMenu(menuName = "Map Size/MapSize_2D")]
+public class MapSize2D : ScriptableObject
 {
     [field: Header("World")]
     [field: SerializeField, Min(0f)] public int Width { get; private set; }
     [field: SerializeField, Min(0f)] public int Depth { get; private set; }
-    [field: SerializeField, Min(0f)] public int MaxHeight { get; private set; }
+    [field: SerializeField, Min(0f)] public int Height { get; private set; }
 
     [field: Header("Chunk")]
     [field: SerializeField, Min(0f)] public int ChunkWidth { get; private set; }
     [field: SerializeField, Min(0f)] public int ChunkDepth { get; private set; }
 
-    private void OnValidate()
+    protected virtual void OnValidate()
     {
         if (!IsPowerOfTwo(Width))
             Width = NearestPowerOf2(Width);
@@ -21,8 +21,8 @@ public class MapSize : ScriptableObject
         if (!IsPowerOfTwo(Depth))
             Depth = NearestPowerOf2(Depth);
 
-        if (!IsPowerOfTwo(MaxHeight))
-            MaxHeight = NearestPowerOf2(MaxHeight);
+        if (!IsPowerOfTwo(Height))
+            Height = NearestPowerOf2(Height);
 
         if (!IsPowerOfTwo(ChunkWidth)) 
             ChunkWidth = NearestPowerOf2(ChunkWidth);
@@ -34,10 +34,10 @@ public class MapSize : ScriptableObject
         ChunkWidth = Mathf.Clamp(ChunkWidth, 2, Width);
     }
 
-    private bool IsPowerOfTwo(int num) 
+    protected bool IsPowerOfTwo(int num) 
         => num != 0 && (num & (num - 1)) == 0;
 
-    private static int NearestPowerOf2(int n)
+    protected static int NearestPowerOf2(int n)
     {
         if (n <= 0) return 1;
 

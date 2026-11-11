@@ -4,11 +4,11 @@ namespace Scripts.Heightmap
 {
     public class HeightmapGenerator
     {
-        private readonly MapSize _mapSize;
+        private readonly MapSize2D _mapSize;
         private readonly MapGenerationData _generationData;
-        private readonly Noise.Noise _noise;
+        private readonly Noise.Noise2D _noise;
 
-        public HeightmapGenerator(MapSize maxSize, MapGenerationData generationData, Noise.Noise noise)
+        public HeightmapGenerator(MapSize2D maxSize, MapGenerationData generationData, Noise.Noise2D noise)
         {
             _mapSize = maxSize;
             _generationData = generationData;
@@ -29,7 +29,7 @@ namespace Scripts.Heightmap
                     float xNorm = (float)x / width * _generationData.NoiseFrequency;
                     float zNorm = (float)z / depth * _generationData.NoiseFrequency;
 
-                    float y = Mathf.Clamp01(_noise.Evaluate(xNorm, zNorm)) * _mapSize.MaxHeight;
+                    float y = Mathf.Clamp01(_noise.Evaluate(xNorm, zNorm)) * _mapSize.Height;
 
                     heightMap[x, z] = y;
                 }

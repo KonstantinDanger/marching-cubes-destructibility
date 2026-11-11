@@ -2,8 +2,8 @@ using UnityEngine;
 
 namespace Scripts.Noise
 {
-    [CreateAssetMenu(menuName = "Noise/Voronoi", fileName = "Noise_Voronoi")]
-    public class VoronoiNoise : Noise
+    [CreateAssetMenu(menuName = "Noise/2D/Voronoi", fileName = "Noise_3D_Voronoi")]
+    public class VoronoiNoise : Noise2D
     {
         public override float Evaluate(float x, float y)
         {

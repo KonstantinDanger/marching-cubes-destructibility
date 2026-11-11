@@ -6,11 +6,11 @@ namespace Scripts.Heightmap
     public class HeightMapMeshGenerator
     {
         private readonly GameObject _meshHolder;
-        private readonly MapSize _mapSize;
+        private readonly MapSize2D _mapSize;
         private readonly Material _baseMaterial;
         private readonly List<HeightmapChunk> _chunks = new();
 
-        public HeightMapMeshGenerator(GameObject meshHolder, MapSize mapSize, Material baseMaterial)
+        public HeightMapMeshGenerator(GameObject meshHolder, MapSize2D mapSize, Material baseMaterial)
         {
             _meshHolder = meshHolder;
             _mapSize = mapSize;
