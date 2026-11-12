@@ -1,4 +1,4 @@
-using Assets.Scripts.Indrastructure;
+using Assets.Scripts.Infrastructure;
 using Scripts.Heightmap;
 using System.Collections;
 using System.Collections.Generic;

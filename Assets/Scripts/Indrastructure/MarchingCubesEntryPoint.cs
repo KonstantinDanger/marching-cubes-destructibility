@@ -1,4 +1,4 @@
-using Assets.Scripts.Indrastructure;
+using Assets.Scripts.Infrastructure;
 using Scripts.MarchingCubes;
 using Scripts.Noise;
 using System.Collections;
@@ -19,6 +19,10 @@ namespace Scripts.Infrastructure
             DensityMapGenerator mapGenerator = new(_mapSize, _noise, _generationData);
             float[,,] densityMap = mapGenerator.GetMap();
 
+            MarchingCubesMeshGenerator meshGenerator = new(_mapSize);
+
+            meshGenerator.Generate(densityMap);
+
             yield return VisualizeDensityMap(densityMap);
         }
 
@@ -26,6 +30,9 @@ namespace Scripts.Infrastructure
         {
             if (densityMap.Length == 0)
                 yield break;
+
+            GameObject densityParentObject = new ("Density holder");
+            densityParentObject.transform.parent = _gridParent;
 
             Vector3 position;
             Color color;
@@ -44,7 +51,8 @@ namespace Scripts.Infrastructure
 
                 color = new(1 - density, 1 - density, 1 - density, 0.9f);
 
-                Helpers.CreateDummyPointAt(position, 0.2f, color, _gridParent, $"Density point, [{density}]");
+                var go = Helpers.CreateDummyPointAt(position, 0.2f, color, _gridParent, $"Density point, [{density}]");
+                go.transform.parent = densityParentObject.transform;
             }
 
             yield return null;

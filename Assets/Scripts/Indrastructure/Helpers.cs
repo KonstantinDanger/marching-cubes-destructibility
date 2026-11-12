@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace Assets.Scripts.Indrastructure
+namespace Assets.Scripts.Infrastructure
 {
     public static class Helpers
     {

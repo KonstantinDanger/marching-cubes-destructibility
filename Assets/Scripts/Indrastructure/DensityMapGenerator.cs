@@ -1,6 +1,4 @@
 using Scripts.Noise;
-using System;
-using UnityEngine;
 
 namespace Scripts.MarchingCubes
 {

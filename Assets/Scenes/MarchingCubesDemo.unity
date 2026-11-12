@@ -662,7 +662,7 @@ GameObject:
   - component: {fileID: 1548112314}
   - component: {fileID: 1548112315}
   m_Layer: 0
-  m_Name: -----Heightmap Entry Point-----
+  m_Name: -----M.Cubes Entry Point-----
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -699,7 +699,6 @@ MonoBehaviour:
   _mapSize: {fileID: 11400000, guid: 9a6677a0b92b22149ba7220493293816, type: 2}
   _generationData: {fileID: 11400000, guid: 3bbde75b155bbea4c96d04201c787062, type: 2}
   _noise: {fileID: 11400000, guid: a8dae0f59d107654087d8d707f173d72, type: 2}
-  _visualizationTime: 0.07
 --- !u!1 &1579422699
 GameObject:
   m_ObjectHideFlags: 0
