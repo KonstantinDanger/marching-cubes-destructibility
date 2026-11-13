@@ -1,10 +1,11 @@
-using Assets.Scripts.Infrastructure;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
 
 namespace Scripts.MarchingCubes
 {
+    using static TriangulationTable;
+    
     public class MarchingCubesMeshGenerator
     {
         private readonly MapSize3D _mapSize;
@@ -61,6 +62,15 @@ namespace Scripts.MarchingCubes
                                 continue;
 
                             triangulationBits |= (1 << i);
+                        }
+
+                        List<int> edges = new();
+                        for (int edge = 0; edge < 12; edge++)
+                        {
+                            if (edge == -1)
+                                break;
+
+                            edges.Add(Table[triangulationBits]);
                         }
 
                         // 1) Get an array of edge indexes using
