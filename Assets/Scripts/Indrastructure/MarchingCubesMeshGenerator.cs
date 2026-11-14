@@ -1,18 +1,19 @@
+using Assets.Scripts.Infrastructure;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
 
 namespace Scripts.MarchingCubes
 {
-    using static TriangulationTable;
-    
     public class MarchingCubesMeshGenerator
     {
         private readonly MapSize3D _mapSize;
+        private readonly Material _baseMaterial;
 
-        public MarchingCubesMeshGenerator(MapSize3D mapSize)
+        public MarchingCubesMeshGenerator(MapSize3D mapSize, Material baseMaterial)
         {
             _mapSize = mapSize;
+            _baseMaterial = baseMaterial;
         }
 
         public void Generate(float[,,] densityMap)
@@ -21,7 +22,7 @@ namespace Scripts.MarchingCubes
 
             MeshRenderer renderer = go.AddComponent<MeshRenderer>();
             MeshFilter filter = go.AddComponent<MeshFilter>();
-
+            renderer.material = _baseMaterial;
             //int width = _mapSize.Width + 1;
             //int height = _mapSize.Height + 1;
             //int depth = _mapSize.Depth + 1;
@@ -30,11 +31,11 @@ namespace Scripts.MarchingCubes
             List<Vector3> vertices = new();
             List<int> triangles = new();
             Vector3Int[] cube = new Vector3Int[8];
-            int triangulationBits = 0;
+            int cubeIndex = 0;
 
-            int width = 2;
-            int height = 2;
-            int depth = 2;
+            int width = 8;
+            int height = 8;
+            int depth = 8;
 
             int startX = 0;
             int startY = 0;
@@ -46,42 +47,45 @@ namespace Scripts.MarchingCubes
                 {
                     for (int z = startZ; z < depth; z++)
                     {
-                        vertices.Add(new(x, y, z));
+                        //vertices.Add(new(x, y, z));
 
                         MarchCube(cube, x, y, z);
 
-                        triangulationBits = 0;
+                        cubeIndex = 0;
 
                         for (int i = 0; i < cube.Length; i++)
                         {
                             int density = Mathf.RoundToInt(densityMap[cube[i].x, cube[i].y, cube[i].z]);
-                            //Vector3 pos = new Vector3(cube[i].x, cube[i].y, cube[i].z);
-                            //Helpers.CreateDummyPointAt(pos, 0.5f, Color.yellow, null);
+                            Vector3 pos = new(cube[i].x, cube[i].y, cube[i].z);
+                            Helpers.CreateDummyPointAt(pos, 0.4f, Color.yellow, go.transform);
 
                             if (density == 0)
                                 continue;
 
-                            triangulationBits |= (1 << i);
+                            cubeIndex |= (1 << i);
                         }
 
-                        List<int> edges = new();
-                        for (int edge = 0; edge < 12; edge++)
+                        for (int i = 0; i < 16; i++)
                         {
-                            if (edge == -1)
+                            int edgeIndex = TriangulationTable.Triangulation[cubeIndex, i];
+
+                            if (edgeIndex == -1)
                                 break;
 
-                            edges.Add(Table[triangulationBits]);
+                            int index1 = TriangulationTable.CornerIndexFromEdge[edgeIndex];
+                            int index2 = TriangulationTable.CornerIndexFromEdge[edgeIndex];
+
+                            Vector3 edgeCenterPos = (cube[index1] + cube[index2]) / 2;
+                            vertices.Add(edgeCenterPos);
+                            triangles.Add(i);
                         }
+
 
                         // 1) Get an array of edge indexes using
                         // "triangulationBits" variable and triangulation table (on the Internet)
                         // 2) Get the centered positions of each edge (using interpolation?)
                         // and add that position to vertices[]
                         // 3) Make a polygons based on vertices
-
-                        int triangulationIndex = Convert.ToInt32(triangulationBits);
-
-                        UnityEngine.Debug.Log("triangulationIndex " + triangulationIndex);
 
                         //int xy = x * (height - 1) + y;
                         //int xyz = xy * (depth - 1) + z;

@@ -13,13 +13,14 @@ namespace Scripts.Infrastructure
         [SerializeField] private MapSize3D _mapSize;
         [SerializeField] private MapGenerationData _generationData;
         [SerializeField] private Noise3D _noise;
+        [SerializeField] private Material _baseMaterial;
 
         public override IEnumerator Initialize()
         {
             DensityMapGenerator mapGenerator = new(_mapSize, _noise, _generationData);
             float[,,] densityMap = mapGenerator.GetMap();
 
-            MarchingCubesMeshGenerator meshGenerator = new(_mapSize);
+            MarchingCubesMeshGenerator meshGenerator = new(_mapSize, _baseMaterial);
 
             meshGenerator.Generate(densityMap);
 
@@ -49,7 +50,7 @@ namespace Scripts.Infrastructure
 
                 float density = densityMap[x, y, z];
 
-                color = new(1 - density, 1 - density, 1 - density, 0.9f);
+                color = new(density, density, density, 0.9f);
 
                 var go = Helpers.CreateDummyPointAt(position, 0.2f, color, _gridParent, $"Density point, [{density}]");
                 go.transform.parent = densityParentObject.transform;
