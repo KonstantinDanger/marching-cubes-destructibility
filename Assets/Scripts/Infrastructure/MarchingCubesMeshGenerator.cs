@@ -56,6 +56,7 @@ namespace Scripts.MarchingCubes
                         for (int i = 0; i < cube.Length; i++)
                         {
                             int density = Mathf.RoundToInt(densityMap[cube[i].x, cube[i].y, cube[i].z]);
+
                             Vector3 pos = new(cube[i].x, cube[i].y, cube[i].z);
                             Helpers.CreateDummyPointAt(pos, 0.4f, Color.yellow, go.transform);
 
