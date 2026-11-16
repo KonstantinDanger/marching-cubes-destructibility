@@ -23,19 +23,16 @@ namespace Scripts.MarchingCubes
             MeshRenderer renderer = go.AddComponent<MeshRenderer>();
             MeshFilter filter = go.AddComponent<MeshFilter>();
             renderer.material = _baseMaterial;
-            //int width = _mapSize.Width + 1;
-            //int height = _mapSize.Height + 1;
-            //int depth = _mapSize.Depth + 1;
+            int width = densityMap.GetLength(0);
+            int height = densityMap.GetLength(1);
+            int depth = densityMap.GetLength(2);
 
             Mesh mesh = new();
             List<Vector3> vertices = new();
             List<int> triangles = new();
             Vector3Int[] cube = new Vector3Int[8];
-            int cubeIndex = 0;
-
-            int width = 8;
-            int height = 8;
-            int depth = 8;
+            int cubeIndex;
+            int cubeCount = 0;
 
             int startX = 0;
             int startY = 0;
@@ -55,15 +52,22 @@ namespace Scripts.MarchingCubes
 
                         for (int i = 0; i < cube.Length; i++)
                         {
-                            int density = Mathf.RoundToInt(densityMap[cube[i].x, cube[i].y, cube[i].z]);
+                            try
+                            {
 
-                            Vector3 pos = new(cube[i].x, cube[i].y, cube[i].z);
-                            Helpers.CreateDummyPointAt(pos, 0.4f, Color.yellow, go.transform);
+                            int density = Mathf.RoundToInt(densityMap[cube[i].x, cube[i].y, cube[i].z]);
+                            //Vector3 pos = new(cube[i].x, cube[i].y, cube[i].z);
+                            //Helpers.CreateDummyPointAt(pos, 0.4f, Color.yellow, go.transform);
 
                             if (density == 0)
                                 continue;
 
                             cubeIndex |= (1 << i);
+                            }
+                            catch
+                            {
+
+                            }
                         }
 
                         for (int i = 0; i < 16; i++)
@@ -73,24 +77,26 @@ namespace Scripts.MarchingCubes
                             if (edgeIndex == -1)
                                 break;
 
-                            int index1 = TriangulationTable.CornerIndexFromEdge[edgeIndex];
-                            int index2 = TriangulationTable.CornerIndexFromEdge[edgeIndex];
+                            int cornerA = TriangulationTable.CornerIndexFromEdge[edgeIndex, 0];
+                            int cornerB = TriangulationTable.CornerIndexFromEdge[edgeIndex, 1];
+                            // i = (isolevel - v1) / (v2 - v1)
+                            // P = P1 + t(P2 - P1)
+                            // P1, P2 - End coords of edge
+                            // v1, v2 - density
+                            // t - interpolation coeficient
 
-                            Vector3 edgeCenterPos = (cube[index1] + cube[index2]) / 2;
+                            Vector3 edgeCenterPos = (cube[cornerA] + cube[cornerB]) / 2;
+
                             vertices.Add(edgeCenterPos);
-                            triangles.Add(i);
+
+                            triangles.Add(vertices.Count - 1);
                         }
-
-
-                        // 1) Get an array of edge indexes using
-                        // "triangulationBits" variable and triangulation table (on the Internet)
-                        // 2) Get the centered positions of each edge (using interpolation?)
-                        // and add that position to vertices[]
-                        // 3) Make a polygons based on vertices
 
                         //int xy = x * (height - 1) + y;
                         //int xyz = xy * (depth - 1) + z;
                         //SetTriangle(triangles, xyz, depth - 1);
+
+                        cubeCount++;
                     }
                 }
             }

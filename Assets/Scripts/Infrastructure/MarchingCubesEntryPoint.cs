@@ -52,7 +52,7 @@ namespace Scripts.Infrastructure
 
                 color = new(density, density, density, 0.9f);
 
-                var go = Helpers.CreateDummyPointAt(position, 0.2f, color, _gridParent, $"Density point, [{density}]");
+                var go = Helpers.CreateDummyPointAt(position, 0.1f, color, _gridParent, $"Density point, [{density}]");
                 go.transform.parent = densityParentObject.transform;
             }
 
