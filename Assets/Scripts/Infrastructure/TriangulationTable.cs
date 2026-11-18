@@ -309,5 +309,5 @@ namespace Scripts.MarchingCubes
         {2,6},
         {3,7}
         };
-    } 
+    }
 }

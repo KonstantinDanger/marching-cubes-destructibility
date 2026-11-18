@@ -523,6 +523,7 @@ MonoBehaviour:
   _generationData: {fileID: 11400000, guid: 3bbde75b155bbea4c96d04201c787062, type: 2}
   _noise: {fileID: 11400000, guid: a8dae0f59d107654087d8d707f173d72, type: 2}
   _baseMaterial: {fileID: 2100000, guid: 9d095a8cfee0045479757535f13d8e8a, type: 2}
+  _visualizeDensityGrid: 0
 --- !u!1 &1579422699
 GameObject:
   m_ObjectHideFlags: 0

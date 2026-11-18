@@ -14,6 +14,7 @@ namespace Scripts.Infrastructure
         [SerializeField] private MapGenerationData _generationData;
         [SerializeField] private Noise3D _noise;
         [SerializeField] private Material _baseMaterial;
+        [SerializeField] private bool _visualizeDensityGrid = true;
 
         public override IEnumerator Initialize()
         {
@@ -23,6 +24,9 @@ namespace Scripts.Infrastructure
             MarchingCubesMeshGenerator meshGenerator = new(_mapSize, _baseMaterial);
 
             meshGenerator.Generate(densityMap);
+
+            if (!_visualizeDensityGrid)
+                yield break;
 
             yield return VisualizeDensityMap(densityMap);
         }

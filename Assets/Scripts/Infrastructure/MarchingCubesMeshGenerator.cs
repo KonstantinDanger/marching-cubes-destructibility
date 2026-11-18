@@ -1,6 +1,7 @@
 using Assets.Scripts.Infrastructure;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using UnityEngine;
 
 namespace Scripts.MarchingCubes
@@ -54,17 +55,16 @@ namespace Scripts.MarchingCubes
                         {
                             try
                             {
+                                int density = Mathf.RoundToInt(densityMap[cube[i].x, cube[i].y, cube[i].z]);
+                                //Vector3 pos = new(cube[i].x, cube[i].y, cube[i].z);
+                                //Helpers.CreateDummyPointAt(pos, 0.4f, Color.yellow, go.transform);
 
-                            int density = Mathf.RoundToInt(densityMap[cube[i].x, cube[i].y, cube[i].z]);
-                            //Vector3 pos = new(cube[i].x, cube[i].y, cube[i].z);
-                            //Helpers.CreateDummyPointAt(pos, 0.4f, Color.yellow, go.transform);
+                                if (density == 0)
+                                    continue;
 
-                            if (density == 0)
-                                continue;
-
-                            cubeIndex |= (1 << i);
+                                cubeIndex |= (1 << i);
                             }
-                            catch
+                            catch // Check for the error
                             {
 
                             }
@@ -100,17 +100,6 @@ namespace Scripts.MarchingCubes
                     }
                 }
             }
-
-            //for (int x = 0; x < width; x++)
-            //{
-            //    for (int y = 0; y < height; y++)
-            //    {
-            //        for (int z = 0; z < depth; z++)
-            //        {
-            //            vertices.Add(new(x, y, z));
-            //        }
-            //    }
-            //}
 
             mesh.vertices = vertices.ToArray();
             mesh.triangles = triangles.ToArray();
