@@ -4,6 +4,7 @@ using UnityEngine;
 public sealed class MapSize3D : MapSize2D
 {
     [field: SerializeField, Min(0f)] public int ChunkHeight { get; private set; }
+    [field: SerializeField, Range(0f, 1f)] public float IsoLevel { get; private set; }
 
     protected override void OnValidate()
     {

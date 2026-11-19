@@ -24,6 +24,7 @@ namespace Scripts.MarchingCubes
             MeshRenderer renderer = go.AddComponent<MeshRenderer>();
             MeshFilter filter = go.AddComponent<MeshFilter>();
             renderer.material = _baseMaterial;
+
             int width = densityMap.GetLength(0);
             int height = densityMap.GetLength(1);
             int depth = densityMap.GetLength(2);
@@ -32,6 +33,7 @@ namespace Scripts.MarchingCubes
             List<Vector3> vertices = new();
             List<int> triangles = new();
             Vector3Int[] cube = new Vector3Int[8];
+
             int cubeIndex;
             int cubeCount = 0;
 
@@ -39,35 +41,33 @@ namespace Scripts.MarchingCubes
             int startY = 0;
             int startZ = 0;
 
-            for (int x = startX; x < width; x++)
+            for (int x = startX; x < width - 1; x++)
             {
-                for (int y = startY; y < height; y++)
+                for (int y = startY; y < height - 1; y++)
                 {
-                    for (int z = startZ; z < depth; z++)
+                    for (int z = startZ; z < depth - 1; z++)
                     {
-                        //vertices.Add(new(x, y, z));
-
                         MarchCube(cube, x, y, z);
 
                         cubeIndex = 0;
 
                         for (int i = 0; i < cube.Length; i++)
                         {
-                            try
-                            {
-                                int density = Mathf.RoundToInt(densityMap[cube[i].x, cube[i].y, cube[i].z]);
-                                //Vector3 pos = new(cube[i].x, cube[i].y, cube[i].z);
-                                //Helpers.CreateDummyPointAt(pos, 0.4f, Color.yellow, go.transform);
+                            float density = densityMap[cube[i].x, cube[i].y, cube[i].z];
+                            //Vector3 pos = new(cube[i].x, cube[i].y, cube[i].z);
+                            //Helpers.CreateDummyPointAt(pos, 0.4f, Color.yellow, go.transform);
 
-                                if (density == 0)
-                                    continue;
+                            if (density < _mapSize.IsoLevel)
+                                continue;
 
-                                cubeIndex |= (1 << i);
-                            }
-                            catch // Check for the error
-                            {
+                            cubeIndex |= (1 << i);
+                        }
 
-                            }
+                        int[] cachedIndices = new int[12];
+
+                        for (int i = 0; i < cachedIndices.Length; i++)
+                        {
+                            cachedIndices[i] = -1;
                         }
 
                         for (int i = 0; i < 16; i++)
@@ -77,19 +77,36 @@ namespace Scripts.MarchingCubes
                             if (edgeIndex == -1)
                                 break;
 
-                            int cornerA = TriangulationTable.CornerIndexFromEdge[edgeIndex, 0];
-                            int cornerB = TriangulationTable.CornerIndexFromEdge[edgeIndex, 1];
-                            // i = (isolevel - v1) / (v2 - v1)
-                            // P = P1 + t(P2 - P1)
-                            // P1, P2 - End coords of edge
-                            // v1, v2 - density
-                            // t - interpolation coeficient
+                            if (cachedIndices[edgeIndex] == -1)
+                            {
+                                int cornerA = TriangulationTable.CornerIndexFromEdge[edgeIndex, 0];
+                                int cornerB = TriangulationTable.CornerIndexFromEdge[edgeIndex, 1];
 
-                            Vector3 edgeCenterPos = (cube[cornerA] + cube[cornerB]) / 2;
+                                Vector3 edgeCenterPos;
 
-                            vertices.Add(edgeCenterPos);
+                                float isoLevel = _mapSize.IsoLevel;
+                                float isoLevelA = densityMap[cube[cornerA].x, cube[cornerA].y, cube[cornerA].z];
+                                float isoLevelB = densityMap[cube[cornerB].x, cube[cornerB].y, cube[cornerB].z];
 
-                            triangles.Add(vertices.Count - 1);
+                                if (Mathf.Abs(isoLevel - isoLevelA) < 0.00001)
+                                    edgeCenterPos = cube[cornerA];
+                                else if (Mathf.Abs(isoLevel - isoLevelB) < 0.00001)
+                                    edgeCenterPos = (cube[cornerB]);
+                                else if (Mathf.Abs(isoLevelA - isoLevelB) < 0.00001)
+                                    edgeCenterPos = (cube[cornerA]);
+                                else
+                                {
+                                    float t = (isoLevel - isoLevelA) / (isoLevelB - isoLevelA);
+
+                                    edgeCenterPos = Vector3.Lerp(cube[cornerA], cube[cornerB], t);
+                                }
+
+                                vertices.Add(edgeCenterPos);
+
+                                cachedIndices[edgeIndex] = vertices.Count - 1;
+                            }
+
+                            triangles.Add(cachedIndices[edgeIndex]);
                         }
 
                         //int xy = x * (height - 1) + y;
@@ -103,7 +120,7 @@ namespace Scripts.MarchingCubes
 
             mesh.vertices = vertices.ToArray();
             mesh.triangles = triangles.ToArray();
-            mesh.RecalculateBounds();
+            //mesh.RecalculateBounds();
             mesh.RecalculateNormals();
 
             filter.mesh = mesh;

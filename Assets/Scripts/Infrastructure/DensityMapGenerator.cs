@@ -1,4 +1,5 @@
 using Scripts.Noise;
+using UnityEngine;
 
 namespace Scripts.MarchingCubes
 {
@@ -23,18 +24,19 @@ namespace Scripts.MarchingCubes
 
             float[,,] densityMap = new float[width, height, depth];
 
+            float scale = 0.1f;
+
             for (int x = 0; x < width; x++)
             {
                 for (int y = 0; y < height; y++)
                 {
                     for (int z = 0; z < depth; z++)
                     {
-                        float xNorm = (float)x / width * _generationData.NoiseFrequency;
-                        float yNorm = (float)y / height * _generationData.NoiseFrequency;
-                        float zNorm = (float)z / depth * _generationData.NoiseFrequency;
+                        float xNorm = (float)x * scale;
+                        float yNorm = (float)y * scale;
+                        float zNorm = (float)z * scale;
 
-                        float noiseValue = _noise.Evaluate(xNorm * 0.99f, yNorm * 0.99f, zNorm * 0.99f);
-                        float density = noiseValue > 0.5f ? 1 : 0;
+                        float density = _noise.Evaluate(xNorm, yNorm, zNorm);
                         densityMap[x, y, z] = density;
                     }
                 }
