@@ -32,9 +32,9 @@ namespace Scripts.MarchingCubes
                 {
                     for (int z = 0; z < depth; z++)
                     {
-                        float xNorm = (float)x * scale;
-                        float yNorm = (float)y * scale;
-                        float zNorm = (float)z * scale;
+                        float xNorm = (float)x / width * _generationData.NoiseFrequency;
+                        float yNorm = (float)y / height * _generationData.NoiseFrequency;
+                        float zNorm = (float)z / depth * _generationData.NoiseFrequency;
 
                         float density = _noise.Evaluate(xNorm, yNorm, zNorm);
                         densityMap[x, y, z] = density;

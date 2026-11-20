@@ -34,7 +34,6 @@ namespace Scripts.Heightmap
                     _chunks.Add(CreateChunk(heightMap, x, z, terrain, terrainObject));
 
             terrain.Initialize(heightMap, _mapSize, _chunks);
-
         }
 
         private HeightmapChunk CreateChunk(float[,] heightMap, int startingX, int startingZ, ProceduralHeightMapTerrain terrain, Transform terrainObject)

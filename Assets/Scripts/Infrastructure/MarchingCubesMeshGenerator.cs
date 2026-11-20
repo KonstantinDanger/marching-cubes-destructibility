@@ -19,111 +19,121 @@ namespace Scripts.MarchingCubes
 
         public void Generate(float[,,] densityMap)
         {
-            GameObject go = new("Vertex holder");
+            int width = densityMap.GetLength(0)  - 1;
+            int height = densityMap.GetLength(1) - 1;
+            int depth = densityMap.GetLength(2)  - 1;
 
-            MeshRenderer renderer = go.AddComponent<MeshRenderer>();
-            MeshFilter filter = go.AddComponent<MeshFilter>();
+            Vector3Int[] cube = new Vector3Int[8];
+
+            for (int x = 0; x < width; x += _mapSize.ChunkWidth)
+            {
+                for (int y = 0; y < height; y += _mapSize.ChunkHeight)
+                {
+                    for (int z = 0; z < depth; z += _mapSize.ChunkDepth)
+                    {
+                        CreateChunk(densityMap, cube, x, y, z);
+                    }
+                }
+            }
+        }
+
+        private Chunk3D CreateChunk(float[,,] densityMap, Vector3Int[] cube, int startX, int startY, int startZ)
+        {
+            GameObject chunkObject = new($"Chunk at [{startX}, {startY}, {startZ}]");
+
+            Chunk3D chunk = chunkObject.AddComponent<Chunk3D>();
+            MeshRenderer renderer = chunkObject.AddComponent<MeshRenderer>();
+            MeshFilter filter = chunkObject.AddComponent<MeshFilter>();
             renderer.material = _baseMaterial;
-
-            int width = densityMap.GetLength(0);
-            int height = densityMap.GetLength(1);
-            int depth = densityMap.GetLength(2);
 
             Mesh mesh = new();
             List<Vector3> vertices = new();
             List<int> triangles = new();
-            Vector3Int[] cube = new Vector3Int[8];
 
-            int cubeIndex;
-            int cubeCount = 0;
-
-            int startX = 0;
-            int startY = 0;
-            int startZ = 0;
-
-            for (int x = startX; x < width - 1; x++)
+            for (int x = 0; x < startX; x++)
             {
-                for (int y = startY; y < height - 1; y++)
+                for (int y = 0; y < startY; y++)
                 {
-                    for (int z = startZ; z < depth - 1; z++)
+                    for (int z = 0; z < startZ; z++)
                     {
-                        MarchCube(cube, x, y, z);
-
-                        cubeIndex = 0;
-
-                        for (int i = 0; i < cube.Length; i++)
-                        {
-                            float density = densityMap[cube[i].x, cube[i].y, cube[i].z];
-                            //Vector3 pos = new(cube[i].x, cube[i].y, cube[i].z);
-                            //Helpers.CreateDummyPointAt(pos, 0.4f, Color.yellow, go.transform);
-
-                            if (density < _mapSize.IsoLevel)
-                                continue;
-
-                            cubeIndex |= (1 << i);
-                        }
-
-                        int[] cachedIndices = new int[12];
-
-                        for (int i = 0; i < cachedIndices.Length; i++)
-                        {
-                            cachedIndices[i] = -1;
-                        }
-
-                        for (int i = 0; i < 16; i++)
-                        {
-                            int edgeIndex = TriangulationTable.Triangulation[cubeIndex, i];
-
-                            if (edgeIndex == -1)
-                                break;
-
-                            if (cachedIndices[edgeIndex] == -1)
-                            {
-                                int cornerA = TriangulationTable.CornerIndexFromEdge[edgeIndex, 0];
-                                int cornerB = TriangulationTable.CornerIndexFromEdge[edgeIndex, 1];
-
-                                Vector3 edgeCenterPos;
-
-                                float isoLevel = _mapSize.IsoLevel;
-                                float isoLevelA = densityMap[cube[cornerA].x, cube[cornerA].y, cube[cornerA].z];
-                                float isoLevelB = densityMap[cube[cornerB].x, cube[cornerB].y, cube[cornerB].z];
-
-                                if (Mathf.Abs(isoLevel - isoLevelA) < 0.00001)
-                                    edgeCenterPos = cube[cornerA];
-                                else if (Mathf.Abs(isoLevel - isoLevelB) < 0.00001)
-                                    edgeCenterPos = (cube[cornerB]);
-                                else if (Mathf.Abs(isoLevelA - isoLevelB) < 0.00001)
-                                    edgeCenterPos = (cube[cornerA]);
-                                else
-                                {
-                                    float t = (isoLevel - isoLevelA) / (isoLevelB - isoLevelA);
-
-                                    edgeCenterPos = Vector3.Lerp(cube[cornerA], cube[cornerB], t);
-                                }
-
-                                vertices.Add(edgeCenterPos);
-
-                                cachedIndices[edgeIndex] = vertices.Count - 1;
-                            }
-
-                            triangles.Add(cachedIndices[edgeIndex]);
-                        }
-
-                        //int xy = x * (height - 1) + y;
-                        //int xyz = xy * (depth - 1) + z;
-                        //SetTriangle(triangles, xyz, depth - 1);
-
-                        cubeCount++;
+                        CreateCube(densityMap, cube, startX, startY, startZ, vertices, triangles);
                     }
                 }
             }
 
             mesh.vertices = vertices.ToArray();
             mesh.triangles = triangles.ToArray();
-            //mesh.RecalculateBounds();
+            mesh.RecalculateBounds();
             mesh.RecalculateNormals();
 
             filter.mesh = mesh;
+
+            return chunk;
+        }
+
+        private void CreateCube(float[,,] densityMap, Vector3Int[] cube, int x, int y, int z, List<Vector3> vertices, List<int> triangles)
+        {
+            int cubeIndex = 0;
+            MarchCube(cube, x, y, z);
+
+            for (int i = 0; i < cube.Length; i++)
+            {
+                float density = densityMap[cube[i].x, cube[i].y, cube[i].z];
+                //Vector3 pos = new(cube[i].x, cube[i].y, cube[i].z);
+                //Helpers.CreateDummyPointAt(pos, 0.4f, Color.yellow, go.transform);
+
+                if (density < _mapSize.IsoLevel)
+                    continue;
+
+                cubeIndex |= (1 << i);
+            }
+
+            int[] cachedIndices = new int[12];
+
+            for (int i = 0; i < cachedIndices.Length; i++)
+                cachedIndices[i] = -1;
+
+            for (int i = 0; i < 16; i++)
+            {
+                int edgeIndex = TriangulationTable.Triangulation[cubeIndex, i];
+
+                if (edgeIndex == -1)
+                    break;
+
+                if (cachedIndices[edgeIndex] == -1)
+                {
+                    int cornerA = TriangulationTable.CornerIndexFromEdge[edgeIndex, 0];
+                    int cornerB = TriangulationTable.CornerIndexFromEdge[edgeIndex, 1];
+
+                    Vector3 edgeCenterPos;
+
+                    float isoLevel = _mapSize.IsoLevel;
+                    float isoLevelA = densityMap[cube[cornerA].x, cube[cornerA].y, cube[cornerA].z];
+                    float isoLevelB = densityMap[cube[cornerB].x, cube[cornerB].y, cube[cornerB].z];
+
+                    if (Mathf.Abs(isoLevel - isoLevelA) < 0.00001f)
+                        edgeCenterPos = cube[cornerA];
+                    else if (Mathf.Abs(isoLevel - isoLevelB) < 0.00001f)
+                        edgeCenterPos = (cube[cornerB]);
+                    else if (Mathf.Abs(isoLevelA - isoLevelB) < 0.00001f)
+                        edgeCenterPos = (cube[cornerA]);
+                    else
+                    {
+                        float t = (isoLevel - isoLevelA) / (isoLevelB - isoLevelA);
+
+                        edgeCenterPos = Vector3.Lerp(cube[cornerA], cube[cornerB], t);
+                    }
+
+                    // For low-poly shape:
+                    //edgeCenterPos = Vector3.Lerp(cube[cornerA], cube[cornerB], _mapSize.IsoLevel); 
+
+                    vertices.Add(edgeCenterPos);
+
+                    cachedIndices[edgeIndex] = vertices.Count - 1;
+                }
+
+                triangles.Add(cachedIndices[edgeIndex]);
+            }
         }
 
         private static void MarchCube(Vector3Int[] cube, int x, int y, int z)
