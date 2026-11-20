@@ -19,11 +19,11 @@ namespace Scripts.MarchingCubes
 
         public void Generate(float[,,] densityMap)
         {
+            Transform parentObject = new GameObject("Chunk holder").transform;
+
             int width = densityMap.GetLength(0)  - 1;
             int height = densityMap.GetLength(1) - 1;
             int depth = densityMap.GetLength(2)  - 1;
-
-            Vector3Int[] cube = new Vector3Int[8];
 
             for (int x = 0; x < width; x += _mapSize.ChunkWidth)
             {
@@ -31,16 +31,15 @@ namespace Scripts.MarchingCubes
                 {
                     for (int z = 0; z < depth; z += _mapSize.ChunkDepth)
                     {
-                        CreateChunk(densityMap, cube, x, y, z);
+                        CreateChunk(densityMap, _mapSize, x, y, z, parentObject);
                     }
                 }
             }
         }
 
-        private Chunk3D CreateChunk(float[,,] densityMap, Vector3Int[] cube, int startX, int startY, int startZ)
+        private Chunk3D CreateChunk(float[,,] densityMap, MapSize3D mapSize, int startX, int startY, int startZ, Transform parentObject)
         {
             GameObject chunkObject = new($"Chunk at [{startX}, {startY}, {startZ}]");
-
             Chunk3D chunk = chunkObject.AddComponent<Chunk3D>();
             MeshRenderer renderer = chunkObject.AddComponent<MeshRenderer>();
             MeshFilter filter = chunkObject.AddComponent<MeshFilter>();
@@ -49,14 +48,19 @@ namespace Scripts.MarchingCubes
             Mesh mesh = new();
             List<Vector3> vertices = new();
             List<int> triangles = new();
+            Vector3Int[] cube = new Vector3Int[8];
 
-            for (int x = 0; x < startX; x++)
+            int finalX = startX + mapSize.ChunkWidth;
+            int finalY = startY + mapSize.ChunkHeight;
+            int finalZ = startZ + mapSize.ChunkDepth;
+
+            for (int x = startX; x < finalX; x++)
             {
-                for (int y = 0; y < startY; y++)
+                for (int y = startY; y < finalY; y++)
                 {
-                    for (int z = 0; z < startZ; z++)
+                    for (int z = startZ; z < finalZ; z++)
                     {
-                        CreateCube(densityMap, cube, startX, startY, startZ, vertices, triangles);
+                        CreateCube(densityMap, cube, x, y, z, vertices, triangles);
                     }
                 }
             }
