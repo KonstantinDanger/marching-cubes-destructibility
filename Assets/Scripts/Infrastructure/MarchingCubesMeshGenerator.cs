@@ -1,7 +1,6 @@
-using Assets.Scripts.Infrastructure;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
+using Unity.VisualScripting;
 using UnityEngine;
 
 namespace Scripts.MarchingCubes
@@ -10,6 +9,7 @@ namespace Scripts.MarchingCubes
     {
         private readonly MapSize3D _mapSize;
         private readonly Material _baseMaterial;
+        private readonly List<Chunk3D> _chunks = new();
 
         public MarchingCubesMeshGenerator(MapSize3D mapSize, Material baseMaterial)
         {
@@ -20,6 +20,7 @@ namespace Scripts.MarchingCubes
         public void Generate(float[,,] densityMap)
         {
             Transform parentObject = new GameObject("Chunk holder").transform;
+            ProceduralDensityTerrain terrain = parentObject.AddComponent<ProceduralDensityTerrain>();
 
             int width = densityMap.GetLength(0)  - 1;
             int height = densityMap.GetLength(1) - 1;
@@ -31,34 +32,26 @@ namespace Scripts.MarchingCubes
                 {
                     for (int z = 0; z < depth; z += _mapSize.ChunkDepth)
                     {
-                        CreateChunk(densityMap, _mapSize, x, y, z, parentObject);
+                        Chunk3D chunk = CreateChunk(densityMap, _mapSize, x, y, z, terrain);
+                        _chunks.Add(chunk);
                     }
                 }
             }
+
+            terrain.Initialize(densityMap, _chunks, _mapSize, this);
         }
 
-        private Chunk3D CreateChunk(float[,,] densityMap, MapSize3D mapSize, int startX, int startY, int startZ, Transform parentObject)
+        public void SetupMesh(Mesh mesh, float[,,] densityMap, Vector3Int start, Vector3Int end)
         {
-            GameObject chunkObject = new($"Chunk at [{startX}, {startY}, {startZ}]");
-            Chunk3D chunk = chunkObject.AddComponent<Chunk3D>();
-            MeshRenderer renderer = chunkObject.AddComponent<MeshRenderer>();
-            MeshFilter filter = chunkObject.AddComponent<MeshFilter>();
-            renderer.material = _baseMaterial;
-
-            Mesh mesh = new();
             List<Vector3> vertices = new();
             List<int> triangles = new();
             Vector3Int[] cube = new Vector3Int[8];
 
-            int finalX = startX + mapSize.ChunkWidth;
-            int finalY = startY + mapSize.ChunkHeight;
-            int finalZ = startZ + mapSize.ChunkDepth;
-
-            for (int x = startX; x < finalX; x++)
+            for (int x = start.x; x < end.x; x++)
             {
-                for (int y = startY; y < finalY; y++)
+                for (int y = start.y; y < end.y; y++)
                 {
-                    for (int z = startZ; z < finalZ; z++)
+                    for (int z = start.z; z < end.z; z++)
                     {
                         CreateCube(densityMap, cube, x, y, z, vertices, triangles);
                     }
@@ -69,8 +62,26 @@ namespace Scripts.MarchingCubes
             mesh.triangles = triangles.ToArray();
             mesh.RecalculateBounds();
             mesh.RecalculateNormals();
+        }
 
-            filter.mesh = mesh;
+        private Chunk3D CreateChunk(float[,,] densityMap, MapSize3D mapSize, int startX, int startY, int startZ, ProceduralDensityTerrain terrain)
+        {
+            GameObject chunkObject = new($"Chunk at [{startX}, {startY}, {startZ}]");
+            chunkObject.transform.parent = terrain.transform;
+            Chunk3D chunk = chunkObject.AddComponent<Chunk3D>();
+
+            Mesh mesh = new();
+
+            int finalX = startX + mapSize.ChunkWidth;
+            int finalY = startY + mapSize.ChunkHeight;
+            int finalZ = startZ + mapSize.ChunkDepth;
+
+            Vector3Int startPos = new (startX, startY, startZ);
+            Vector3Int endPos = new(finalX, finalY, finalZ);
+
+            SetupMesh(mesh, densityMap, startPos, endPos);
+
+            chunk.Initialize(terrain, mesh, _baseMaterial, startPos, endPos);
 
             return chunk;
         }

@@ -1,4 +1,6 @@
 using Scripts.Heightmap;
+using Scripts.MarchingCubes;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -46,13 +48,26 @@ public class TerrainBrush : MonoBehaviour
         {
             Vector3[] selectedVertices = SelectVertices(ray, out HeightmapChunk chunk);
 
-            if (selectedVertices == null)
-                return;
-
-            for (int i = 0; i < selectedVertices.Length; i++)
+            if (chunk)
             {
-                Vector3 selectedPos = selectedVertices[i];
-                chunk.ModifyVertexHeight(selectedPos.x, selectedPos.z, -_loweringStrength, this);
+                for (int i = 0; i < selectedVertices.Length; i++)
+                {
+                    Vector3 selectedPos = selectedVertices[i];
+                    chunk.ModifyVertexHeight(selectedPos.x, selectedPos.z, -_loweringStrength, this);
+                }
+            }
+            else
+            {
+                selectedVertices = SelectVertices(ray, out Chunk3D chunk3D);
+
+                if (!chunk)
+                    return;
+
+                for (int i = 0; i < selectedVertices.Length; i++)
+                {
+                    Vector3 pos = selectedVertices[i];
+                    chunk3D.ModifyDensity(pos, 0, this);
+                }
             }
 
             ResetTimer();
@@ -62,17 +77,61 @@ public class TerrainBrush : MonoBehaviour
         {
             Vector3[] selectedVertices = SelectVertices(ray, out HeightmapChunk chunk);
 
-            if (selectedVertices == null)
-                return;
-
-            for (int i = 0; i < selectedVertices.Length; i++)
+            if (chunk)
             {
-                Vector3 selectedPos = selectedVertices[i];
-                chunk.ModifyVertexHeight(selectedPos.x, selectedPos.z, _raisingStrength, this);
+                for (int i = 0; i < selectedVertices.Length; i++)
+                {
+                    Vector3 selectedPos = selectedVertices[i];
+                    chunk.ModifyVertexHeight(selectedPos.x, selectedPos.z, _raisingStrength, this);
+                }
+            }
+            else
+            {
+                selectedVertices = SelectVertices(ray, out Chunk3D chunk3D);
+
+                if (!chunk)
+                    return;
+
+                for (int i = 0; i < selectedVertices.Length; i++)
+                {
+                    Vector3 pos = selectedVertices[i];
+                    chunk3D.ModifyDensity(pos, belowIsoSurface: false, this);
+                }
             }
 
             ResetTimer();
         }
+    }
+
+    private Vector3[] SelectVertices(Ray ray, out Chunk3D chunk3D)
+    {
+        chunk3D = null;
+
+        if (!Physics.Raycast(ray, out RaycastHit hit))
+            return null;
+
+        if (!hit.collider.TryGetComponent(out chunk3D))
+            return null;
+
+        List<Vector3> selected = new();
+
+        Vector3[] vertices = chunk3D.Vertices.ToArray();
+        Vector3 contactPoint = hit.point;
+        int index = 0;
+
+        foreach (Vector3 vertice in vertices)
+        {
+            float distanceToVertice = (vertice - contactPoint).magnitude;
+
+            if (distanceToVertice <= _brushRange)
+            {
+                selected.Add(vertice);
+            }
+
+            index++;
+        }
+
+        return selected.ToArray();
     }
 
     private Vector3[] SelectVertices(Ray ray, out HeightmapChunk chunk)
