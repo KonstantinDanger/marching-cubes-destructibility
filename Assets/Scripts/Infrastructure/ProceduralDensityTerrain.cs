@@ -32,8 +32,12 @@ namespace Scripts.MarchingCubes
 
             _densityMap[x, y, z] = belowIsoSurface ? 0 : _mapSize.IsoLevel;
             
-            int xy = x * (_mapSize.ChunkHeight + 1) + y;
-            int chunkIndex = xy * (_mapSize.Depth + 1) + z;
+            int localX = x % _mapSize.ChunkWidth;
+            int localY = y % _mapSize.ChunkHeight;
+            int localZ = z % _mapSize.ChunkDepth;
+
+            int xy = localX * (_mapSize.ChunkHeight + 1) + localY;
+            int chunkIndex = xy * (_mapSize.ChunkDepth + 1) + localZ;
             Chunk3D chunk = _chunks[chunkIndex]; 
 
             _meshGenerator.SetupMesh(chunk.Mesh, _densityMap, chunk.StartPos, chunk.EndPos);
@@ -44,8 +48,8 @@ namespace Scripts.MarchingCubes
             => x < 0
             || y < 0
             || z < 0
-            || x >= mapSize.ChunkWidth
-            || y >= mapSize.ChunkHeight
+            || x >= mapSize.Width
+            || y >= mapSize.Height
             || z >= mapSize.Depth;
     }
 }
