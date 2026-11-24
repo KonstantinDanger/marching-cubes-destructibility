@@ -21,30 +21,49 @@ namespace Scripts.MarchingCubes
 
         public void ModifyDensity(Vector3 pos, bool belowIsoSurface)
         {
-            int x = Mathf.RoundToInt(pos.x);
-            int y = Mathf.RoundToInt(pos.y);
-            int z = Mathf.RoundToInt(pos.z);
+            int chunkIndex = -1;
 
-            if (OutOfBounds(_mapSize, x, y, z))
-                return;
+            try
+            {
+                int chunkWidth = _mapSize.ChunkWidth - 1;
+                int chunkHeight = _mapSize.ChunkHeight - 1;
+                int chunkDepth = _mapSize.ChunkDepth - 1;
 
-            // TODO: Handle chunk seams coords modification
+                int globalX = Mathf.FloorToInt(pos.x);
+                int globalY = Mathf.FloorToInt(pos.y);
+                int globalZ = Mathf.FloorToInt(pos.z);
 
-            _densityMap[x, y, z] = belowIsoSurface ? 0 : _mapSize.IsoLevel;
-            
-            int localX = x % _mapSize.ChunkWidth;
-            int localY = y % _mapSize.ChunkHeight;
-            int localZ = z % _mapSize.ChunkDepth;
+                int chunkX = Mathf.FloorToInt((float) globalX / chunkWidth);
+                int chunkY = Mathf.FloorToInt((float) globalY / chunkHeight);
+                int chunkZ = Mathf.FloorToInt((float) globalZ / chunkDepth);
 
-            int xy = localX * (_mapSize.ChunkHeight + 1) + localY;
-            int chunkIndex = xy * (_mapSize.ChunkDepth + 1) + localZ;
-            Chunk3D chunk = _chunks[chunkIndex]; 
+                int chunksNumX = _mapSize.Width / _mapSize.ChunkWidth;
+                int chunksNumY = _mapSize.Height / _mapSize.ChunkHeight;
+                int chunksNumZ = _mapSize.Depth / _mapSize.ChunkDepth;
 
-            _meshGenerator.SetupMesh(chunk.Mesh, _densityMap, chunk.StartPos, chunk.EndPos);
-            chunk.UpdateMesh();
+                if (OutOfBounds(_mapSize, globalX, globalY, globalZ))
+                    return;
+
+                // TODO: Handle chunk seams coords modification
+
+                _densityMap[globalX, globalY, globalZ] = belowIsoSurface ? 0 : _mapSize.IsoLevel;
+
+                //chunkIndex = chunkX * chunkHeight * chunkDepth + chunkY * chunkDepth + chunkZ;
+                chunkIndex = chunkZ + chunkY * chunksNumZ + chunkX * chunksNumY * chunksNumZ;
+
+                Chunk3D chunk = _chunks[chunkIndex];
+
+                _meshGenerator.SetupMesh(chunk.Mesh, _densityMap, chunk.StartPos, chunk.EndPos);
+                chunk.UpdateMesh();
+            }
+            catch (ArgumentOutOfRangeException e)
+            {
+
+                UnityEngine.Debug.Log($"Invalid index: {chunkIndex}");
+            }
         }
 
-        private static bool OutOfBounds(MapSize3D mapSize, int x, int y, int z) 
+        private static bool OutOfBounds(MapSize3D mapSize, int x, int y, int z)
             => x < 0
             || y < 0
             || z < 0

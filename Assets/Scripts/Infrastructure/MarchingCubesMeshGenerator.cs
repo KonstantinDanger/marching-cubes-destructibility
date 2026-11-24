@@ -66,7 +66,7 @@ namespace Scripts.MarchingCubes
 
         private Chunk3D CreateChunk(float[,,] densityMap, MapSize3D mapSize, int startX, int startY, int startZ, ProceduralDensityTerrain terrain)
         {
-            GameObject chunkObject = new($"Chunk at [{startX}, {startY}, {startZ}]");
+            GameObject chunkObject = new($"Chunk at [{startX}, {startY}, {startZ}] | index: {_chunks.Count}");
             chunkObject.transform.parent = terrain.transform;
             Chunk3D chunk = chunkObject.AddComponent<Chunk3D>();
 

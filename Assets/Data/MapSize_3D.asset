@@ -15,7 +15,7 @@ MonoBehaviour:
   <Width>k__BackingField: 32
   <Depth>k__BackingField: 32
   <Height>k__BackingField: 32
-  <ChunkWidth>k__BackingField: 8
-  <ChunkDepth>k__BackingField: 8
-  <ChunkHeight>k__BackingField: 8
+  <ChunkWidth>k__BackingField: 16
+  <ChunkDepth>k__BackingField: 16
+  <ChunkHeight>k__BackingField: 16
   <IsoLevel>k__BackingField: 0.5
