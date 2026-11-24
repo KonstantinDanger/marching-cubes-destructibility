@@ -25,21 +25,21 @@ namespace Scripts.MarchingCubes
 
             try
             {
-                int chunkWidth = _mapSize.ChunkWidth - 1;
-                int chunkHeight = _mapSize.ChunkHeight - 1;
-                int chunkDepth = _mapSize.ChunkDepth - 1;
+                int chunkWidth = _mapSize.ChunkWidth;
+                int chunkHeight = _mapSize.ChunkHeight;
+                int chunkDepth = _mapSize.ChunkDepth;
 
                 int globalX = Mathf.FloorToInt(pos.x);
                 int globalY = Mathf.FloorToInt(pos.y);
                 int globalZ = Mathf.FloorToInt(pos.z);
 
-                int chunkX = Mathf.FloorToInt((float) globalX / chunkWidth);
-                int chunkY = Mathf.FloorToInt((float) globalY / chunkHeight);
-                int chunkZ = Mathf.FloorToInt((float) globalZ / chunkDepth);
+                int chunkX = globalX / chunkWidth;
+                int chunkY = globalY / chunkHeight;
+                int chunkZ = globalZ / chunkDepth;
 
-                int chunksNumX = _mapSize.Width / _mapSize.ChunkWidth;
-                int chunksNumY = _mapSize.Height / _mapSize.ChunkHeight;
-                int chunksNumZ = _mapSize.Depth / _mapSize.ChunkDepth;
+                int chunksNumX = (_mapSize.Width + chunkWidth - 1) / chunkWidth;
+                int chunksNumY = (_mapSize.Height + chunkHeight - 1) / chunkHeight;
+                int chunksNumZ = (_mapSize.Depth + chunkDepth - 1) / chunkDepth;
 
                 if (OutOfBounds(_mapSize, globalX, globalY, globalZ))
                     return;
