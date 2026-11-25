@@ -24,17 +24,15 @@ namespace Scripts.MarchingCubes
 
             float[,,] densityMap = new float[width, height, depth];
 
-            float scale = 0.1f;
-
             for (int x = 0; x < width; x++)
             {
                 for (int y = 0; y < height; y++)
                 {
                     for (int z = 0; z < depth; z++)
                     {
-                        float xNorm = (float)x / width * _generationData.NoiseFrequency;
-                        float yNorm = (float)y / height * _generationData.NoiseFrequency;
-                        float zNorm = (float)z / depth * _generationData.NoiseFrequency;
+                        float xNorm = x * _generationData.NoiseFrequency;
+                        float yNorm = y * _generationData.NoiseFrequency;
+                        float zNorm = z * _generationData.NoiseFrequency;
 
                         float density = _noise.Evaluate(xNorm, yNorm, zNorm);
                         densityMap[x, y, z] = density;

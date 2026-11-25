@@ -12,9 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6d1da0970c62768408eeaf481c01f8dc, type: 3}
   m_Name: MapSize_3D
   m_EditorClassIdentifier: 
-  <Width>k__BackingField: 32
-  <Depth>k__BackingField: 32
-  <Height>k__BackingField: 32
+  <Width>k__BackingField: 128
+  <Depth>k__BackingField: 128
+  <Height>k__BackingField: 128
   <ChunkWidth>k__BackingField: 16
   <ChunkDepth>k__BackingField: 16
   <ChunkHeight>k__BackingField: 16

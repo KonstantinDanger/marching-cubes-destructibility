@@ -33,6 +33,9 @@ namespace Scripts.MarchingCubes
                 int globalY = Mathf.FloorToInt(pos.y);
                 int globalZ = Mathf.FloorToInt(pos.z);
 
+                if (OutOfBounds(_mapSize, globalX, globalY, globalZ))
+                    return;
+
                 int chunkX = globalX / chunkWidth;
                 int chunkY = globalY / chunkHeight;
                 int chunkZ = globalZ / chunkDepth;
@@ -40,9 +43,6 @@ namespace Scripts.MarchingCubes
                 int chunksNumX = (_mapSize.Width + chunkWidth - 1) / chunkWidth;
                 int chunksNumY = (_mapSize.Height + chunkHeight - 1) / chunkHeight;
                 int chunksNumZ = (_mapSize.Depth + chunkDepth - 1) / chunkDepth;
-
-                if (OutOfBounds(_mapSize, globalX, globalY, globalZ))
-                    return;
 
                 // TODO: Handle chunk seams coords modification
 
@@ -67,8 +67,8 @@ namespace Scripts.MarchingCubes
             => x < 0
             || y < 0
             || z < 0
-            || x >= mapSize.Width
-            || y >= mapSize.Height
-            || z >= mapSize.Depth;
+            || x > mapSize.Width
+            || y > mapSize.Height
+            || z > mapSize.Depth;
     }
 }

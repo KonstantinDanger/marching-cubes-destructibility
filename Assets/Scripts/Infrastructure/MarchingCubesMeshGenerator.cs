@@ -45,7 +45,6 @@ namespace Scripts.MarchingCubes
         {
             List<Vector3> vertices = new();
             List<int> triangles = new();
-            Vector3Int[] cube = new Vector3Int[8];
 
             for (int x = start.x; x < end.x; x++)
             {
@@ -53,10 +52,13 @@ namespace Scripts.MarchingCubes
                 {
                     for (int z = start.z; z < end.z; z++)
                     {
-                        CreateCube(densityMap, cube, x, y, z, vertices, triangles);
+                        CreateCube(densityMap, x, y, z, vertices, triangles);
                     }
                 }
             }
+
+            if (mesh.vertices.Length != 0)
+                mesh.Clear(); 
 
             mesh.vertices = vertices.ToArray();
             mesh.triangles = triangles.ToArray();
@@ -86,8 +88,10 @@ namespace Scripts.MarchingCubes
             return chunk;
         }
 
-        private void CreateCube(float[,,] densityMap, Vector3Int[] cube, int x, int y, int z, List<Vector3> vertices, List<int> triangles)
+        private void CreateCube(float[,,] densityMap, int x, int y, int z, List<Vector3> vertices, List<int> triangles)
         {
+            Vector3Int[] cube = new Vector3Int[8];
+
             int cubeIndex = 0;
             MarchCube(cube, x, y, z);
 
@@ -143,7 +147,7 @@ namespace Scripts.MarchingCubes
                     //edgeCenterPos = Vector3.Lerp(cube[cornerA], cube[cornerB], _mapSize.IsoLevel); 
 
                     vertices.Add(edgeCenterPos);
-
+                    
                     cachedIndices[edgeIndex] = vertices.Count - 1;
                 }
 
@@ -161,17 +165,6 @@ namespace Scripts.MarchingCubes
             cube[5] = new(x + 1, y, z + 1);
             cube[6] = new(x + 1, y + 1, z + 1);
             cube[7] = new(x, y + 1, z + 1);
-        }
-
-        private static void SetTriangle(List<int> triangles, int i, int depth)
-        {
-            triangles.Add(i);
-            triangles.Add(i + 1);
-            triangles.Add(i + depth);
-
-            triangles.Add(i + depth);
-            triangles.Add(i + 1);
-            triangles.Add(i + depth + 1);
         }
     }
 }
