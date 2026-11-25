@@ -66,7 +66,7 @@ public class TerrainBrush : MonoBehaviour
                 for (int i = 0; i < selectedVertices.Length; i++)
                 {
                     Vector3 pos = selectedVertices[i];
-                    chunk3D.ModifyDensity(pos, true, this);
+                    chunk3D.ModifyDensity(pos, belowIsoSurface: false, this);
                 }
             }
 
@@ -95,7 +95,7 @@ public class TerrainBrush : MonoBehaviour
                 for (int i = 0; i < selectedVertices.Length; i++)
                 {
                     Vector3 pos = selectedVertices[i];
-                    chunk3D.ModifyDensity(pos, belowIsoSurface: false, this);
+                    chunk3D.ModifyDensity(pos, belowIsoSurface: true, this);
                 }
             }
 

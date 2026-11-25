@@ -21,45 +21,66 @@ namespace Scripts.MarchingCubes
 
         public void ModifyDensity(Vector3 pos, bool belowIsoSurface)
         {
+            int chunkWidth = _mapSize.ChunkWidth;
+            int chunkHeight = _mapSize.ChunkHeight;
+            int chunkDepth = _mapSize.ChunkDepth;
+
+            int globalX = Mathf.FloorToInt(pos.x);
+            int globalY = Mathf.FloorToInt(pos.y);
+            int globalZ = Mathf.FloorToInt(pos.z);
+
+            if (OutOfBounds(_mapSize, globalX, globalY, globalZ))
+                return;
+
+            int chunkX = globalX / chunkWidth;
+            int chunkY = globalY / chunkHeight;
+            int chunkZ = globalZ / chunkDepth;
+
+            int chunksNumX = (_mapSize.Width + chunkWidth - 1) / chunkWidth;
+            int chunksNumY = (_mapSize.Height + chunkHeight - 1) / chunkHeight;
+            int chunksNumZ = (_mapSize.Depth + chunkDepth - 1) / chunkDepth;
+
+            _densityMap[globalX, globalY, globalZ] = belowIsoSurface ? _mapSize.IsoLevel - 1 : _mapSize.IsoLevel + 1;
+
+            UpdateChunks(pos, new(globalX, globalY, globalZ), new(chunkX, chunkY, chunkZ), new(chunksNumX, chunksNumY, chunksNumZ));
+        }
+
+        private void UpdateChunks(Vector3 modificationPos, Vector3Int globalPos, Vector3Int chunkPos, Vector3Int chunksNums)
+        {
             int chunkIndex = -1;
 
             try
             {
-                int chunkWidth = _mapSize.ChunkWidth;
-                int chunkHeight = _mapSize.ChunkHeight;
-                int chunkDepth = _mapSize.ChunkDepth;
+                List<Chunk3D> chunks = new();
 
-                int globalX = Mathf.FloorToInt(pos.x);
-                int globalY = Mathf.FloorToInt(pos.y);
-                int globalZ = Mathf.FloorToInt(pos.z);
+                int localX = Mathf.FloorToInt(modificationPos.x % _mapSize.ChunkWidth);
+                int localY = Mathf.FloorToInt(modificationPos.y % _mapSize.ChunkHeight);
+                int localZ = Mathf.FloorToInt(modificationPos.z % _mapSize.ChunkDepth);
 
-                if (OutOfBounds(_mapSize, globalX, globalY, globalZ))
-                    return;
+                //bool pointOnEdgeOrCorner = localX == 0 || localY == 0 || localZ == 0 || localX == _mapSize.ChunkWidth || localY == _mapSize.ChunkHeight || localZ == _mapSize.ChunkDepth;
+                //bool pointOnTheFace = !pointOnEdgeOrCorner;
 
-                int chunkX = globalX / chunkWidth;
-                int chunkY = globalY / chunkHeight;
-                int chunkZ = globalZ / chunkDepth;
+                //if (pointOnEdgeOrCorner)
+                //{
+                //    // Update all 4 neighbour chunks
+                //}
+                //else if ()
+                // else if point is on the (edge || corner) -> index = ...; chunks.Add(_chunks[chunkIndex]);  
+                // else if point is on the face ->  index = ...; chunks.Add(_chunks[chunkIndex]);
 
-                int chunksNumX = (_mapSize.Width + chunkWidth - 1) / chunkWidth;
-                int chunksNumY = (_mapSize.Height + chunkHeight - 1) / chunkHeight;
-                int chunksNumZ = (_mapSize.Depth + chunkDepth - 1) / chunkDepth;
+                // Add targeted chunk in any case
+                chunkIndex = chunkPos.z + chunkPos.y * chunksNums.z + chunkPos.x * chunksNums.y * chunksNums.z;
+                chunks.Add(_chunks[chunkIndex]);
 
-                // TODO: Handle chunk seams coords modification
-
-                _densityMap[globalX, globalY, globalZ] = belowIsoSurface ? 0 : _mapSize.IsoLevel;
-
-                //chunkIndex = chunkX * chunkHeight * chunkDepth + chunkY * chunkDepth + chunkZ;
-                chunkIndex = chunkZ + chunkY * chunksNumZ + chunkX * chunksNumY * chunksNumZ;
-
-                Chunk3D chunk = _chunks[chunkIndex];
-
-                _meshGenerator.SetupMesh(chunk.Mesh, _densityMap, chunk.StartPos, chunk.EndPos);
-                chunk.UpdateMesh();
+                foreach (var chunk in chunks)
+                {
+                    _meshGenerator.SetupMesh(chunk.Mesh, _densityMap, chunk.StartPos, chunk.EndPos);
+                    chunk.UpdateMesh();
+                }
             }
             catch (ArgumentOutOfRangeException e)
             {
-
-                UnityEngine.Debug.Log($"Invalid index: {chunkIndex}");
+                Debug.Log($"Invalid index: {chunkIndex}");
             }
         }
 

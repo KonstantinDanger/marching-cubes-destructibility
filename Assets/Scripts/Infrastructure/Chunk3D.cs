@@ -32,9 +32,9 @@ namespace Scripts.MarchingCubes
             _filter = gameObject.AddComponent<MeshFilter>();
 
             _mesh = mesh;
-            _filter.mesh = mesh;
+            _filter.sharedMesh = mesh;
             _meshCollider.sharedMesh = mesh;
-            _renderer.material = baseMaterial;
+            _renderer.sharedMaterial = baseMaterial;
         }
 
         public void ModifyDensity(Vector3 pos, bool belowIsoSurface, object sender)

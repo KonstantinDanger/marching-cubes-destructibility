@@ -1,6 +1,4 @@
-using System;
 using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
 
 namespace Scripts.MarchingCubes
@@ -11,6 +9,9 @@ namespace Scripts.MarchingCubes
         private readonly Material _baseMaterial;
         private readonly List<Chunk3D> _chunks = new();
 
+        private readonly static Vector3Int[] CachedCube = new Vector3Int[8];
+        private readonly static int[] CachedIndices = new int[12];
+
         public MarchingCubesMeshGenerator(MapSize3D mapSize, Material baseMaterial)
         {
             _mapSize = mapSize;
@@ -19,8 +20,13 @@ namespace Scripts.MarchingCubes
 
         public void Generate(float[,,] densityMap)
         {
+            foreach (var chunk in _chunks)
+                Object.Destroy(chunk.gameObject);
+
+            _chunks.Clear();
+
             Transform parentObject = new GameObject("Chunk holder").transform;
-            ProceduralDensityTerrain terrain = parentObject.AddComponent<ProceduralDensityTerrain>();
+            ProceduralDensityTerrain terrain = parentObject.gameObject.AddComponent<ProceduralDensityTerrain>();
 
             int width = densityMap.GetLength(0)  - 1;
             int height = densityMap.GetLength(1) - 1;
@@ -90,27 +96,23 @@ namespace Scripts.MarchingCubes
 
         private void CreateCube(float[,,] densityMap, int x, int y, int z, List<Vector3> vertices, List<int> triangles)
         {
-            Vector3Int[] cube = new Vector3Int[8];
-
             int cubeIndex = 0;
-            MarchCube(cube, x, y, z);
+            MarchCube(CachedCube, x, y, z);
 
-            for (int i = 0; i < cube.Length; i++)
+            for (int i = 0; i < CachedCube.Length; i++)
             {
-                float density = densityMap[cube[i].x, cube[i].y, cube[i].z];
+                float density = densityMap[CachedCube[i].x, CachedCube[i].y, CachedCube[i].z];
                 //Vector3 pos = new(cube[i].x, cube[i].y, cube[i].z);
                 //Helpers.CreateDummyPointAt(pos, 0.4f, Color.yellow, go.transform);
 
-                if (density < _mapSize.IsoLevel)
+                if (density > _mapSize.IsoLevel)
                     continue;
 
                 cubeIndex |= (1 << i);
             }
 
-            int[] cachedIndices = new int[12];
-
-            for (int i = 0; i < cachedIndices.Length; i++)
-                cachedIndices[i] = -1;
+            for (int i = 0; i < CachedIndices.Length; i++)
+                CachedIndices[i] = -1;
 
             for (int i = 0; i < 16; i++)
             {
@@ -119,7 +121,7 @@ namespace Scripts.MarchingCubes
                 if (edgeIndex == -1)
                     break;
 
-                if (cachedIndices[edgeIndex] == -1)
+                if (CachedIndices[edgeIndex] == -1)
                 {
                     int cornerA = TriangulationTable.CornerIndexFromEdge[edgeIndex, 0];
                     int cornerB = TriangulationTable.CornerIndexFromEdge[edgeIndex, 1];
@@ -127,31 +129,31 @@ namespace Scripts.MarchingCubes
                     Vector3 edgeCenterPos;
 
                     float isoLevel = _mapSize.IsoLevel;
-                    float isoLevelA = densityMap[cube[cornerA].x, cube[cornerA].y, cube[cornerA].z];
-                    float isoLevelB = densityMap[cube[cornerB].x, cube[cornerB].y, cube[cornerB].z];
+                    float isoLevelA = densityMap[CachedCube[cornerA].x, CachedCube[cornerA].y, CachedCube[cornerA].z];
+                    float isoLevelB = densityMap[CachedCube[cornerB].x, CachedCube[cornerB].y, CachedCube[cornerB].z];
 
                     if (Mathf.Abs(isoLevel - isoLevelA) < 0.00001f)
-                        edgeCenterPos = cube[cornerA];
+                        edgeCenterPos = CachedCube[cornerA];
                     else if (Mathf.Abs(isoLevel - isoLevelB) < 0.00001f)
-                        edgeCenterPos = (cube[cornerB]);
+                        edgeCenterPos = (CachedCube[cornerB]);
                     else if (Mathf.Abs(isoLevelA - isoLevelB) < 0.00001f)
-                        edgeCenterPos = (cube[cornerA]);
+                        edgeCenterPos = (CachedCube[cornerA]);
                     else
                     {
                         float t = (isoLevel - isoLevelA) / (isoLevelB - isoLevelA);
 
-                        edgeCenterPos = Vector3.Lerp(cube[cornerA], cube[cornerB], t);
+                        edgeCenterPos = Vector3.Lerp(CachedCube[cornerA], CachedCube[cornerB], t);
                     }
 
                     // For low-poly shape:
-                    //edgeCenterPos = Vector3.Lerp(cube[cornerA], cube[cornerB], _mapSize.IsoLevel); 
+                    //edgeCenterPos = Vector3.Lerp(cube[cornerA], cube[cornerB], 0.5f); 
 
                     vertices.Add(edgeCenterPos);
                     
-                    cachedIndices[edgeIndex] = vertices.Count - 1;
+                    CachedIndices[edgeIndex] = vertices.Count - 1;
                 }
 
-                triangles.Add(cachedIndices[edgeIndex]);
+                triangles.Add(CachedIndices[edgeIndex]);
             }
         }
 
