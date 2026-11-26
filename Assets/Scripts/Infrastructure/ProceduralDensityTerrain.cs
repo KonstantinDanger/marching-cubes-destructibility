@@ -21,10 +21,6 @@ namespace Scripts.MarchingCubes
 
         public void ModifyDensity(Vector3 pos, bool belowIsoSurface)
         {
-            int chunkWidth = _mapSize.ChunkWidth;
-            int chunkHeight = _mapSize.ChunkHeight;
-            int chunkDepth = _mapSize.ChunkDepth;
-
             int globalX = Mathf.FloorToInt(pos.x);
             int globalY = Mathf.FloorToInt(pos.y);
             int globalZ = Mathf.FloorToInt(pos.z);
@@ -32,56 +28,106 @@ namespace Scripts.MarchingCubes
             if (OutOfBounds(_mapSize, globalX, globalY, globalZ))
                 return;
 
-            int chunkX = globalX / chunkWidth;
-            int chunkY = globalY / chunkHeight;
-            int chunkZ = globalZ / chunkDepth;
-
-            int chunksNumX = (_mapSize.Width + chunkWidth - 1) / chunkWidth;
-            int chunksNumY = (_mapSize.Height + chunkHeight - 1) / chunkHeight;
-            int chunksNumZ = (_mapSize.Depth + chunkDepth - 1) / chunkDepth;
-
             _densityMap[globalX, globalY, globalZ] = belowIsoSurface ? _mapSize.IsoLevel - 1 : _mapSize.IsoLevel + 1;
 
-            UpdateChunks(pos, new(globalX, globalY, globalZ), new(chunkX, chunkY, chunkZ), new(chunksNumX, chunksNumY, chunksNumZ));
+            Vector3Int globalPos = new(globalX, globalY, globalZ);
+
+            UpdateChunks(globalPos);
         }
 
-        private void UpdateChunks(Vector3 modificationPos, Vector3Int globalPos, Vector3Int chunkPos, Vector3Int chunksNums)
+        private void UpdateChunks(Vector3Int globalPos)
         {
-            int chunkIndex = -1;
+            Chunk3D startingChunk = _chunks[GetChunkIndex(globalPos)];
+
+            List<Chunk3D> chunks = new() {
+                startingChunk
+            };
+
+            int localX = Mathf.FloorToInt(globalPos.x % (_mapSize.ChunkWidth));
+            int localY = Mathf.FloorToInt(globalPos.y % (_mapSize.ChunkHeight));
+            int localZ = Mathf.FloorToInt(globalPos.z % (_mapSize.ChunkDepth));
+
+            Vector3Int start = startingChunk.StartPos;
+            Vector3Int shift = start;
+
+            ModifyAxesShifts(localX, localY, localZ, ref shift);
+
+            List<Vector3Int> neighbourChunkPositions = new()
+            {
+                new (start.x, start.y, shift.z),
+
+                new (start.x, shift.y, start.z),
+                new (start.x, shift.y, shift.z),
+
+                new (shift.x, start.y, start.z),
+                new (shift.x, start.y, shift.z),
+
+                new (shift.x, shift.y, start.z),
+                new (shift.x, shift.y, shift.z),
+            };
+
+            int index = -1;
 
             try
             {
-                List<Chunk3D> chunks = new();
-
-                int localX = Mathf.FloorToInt(modificationPos.x % _mapSize.ChunkWidth);
-                int localY = Mathf.FloorToInt(modificationPos.y % _mapSize.ChunkHeight);
-                int localZ = Mathf.FloorToInt(modificationPos.z % _mapSize.ChunkDepth);
-
-                //bool pointOnEdgeOrCorner = localX == 0 || localY == 0 || localZ == 0 || localX == _mapSize.ChunkWidth || localY == _mapSize.ChunkHeight || localZ == _mapSize.ChunkDepth;
-                //bool pointOnTheFace = !pointOnEdgeOrCorner;
-
-                //if (pointOnEdgeOrCorner)
-                //{
-                //    // Update all 4 neighbour chunks
-                //}
-                //else if ()
-                // else if point is on the (edge || corner) -> index = ...; chunks.Add(_chunks[chunkIndex]);  
-                // else if point is on the face ->  index = ...; chunks.Add(_chunks[chunkIndex]);
-
-                // Add targeted chunk in any case
-                chunkIndex = chunkPos.z + chunkPos.y * chunksNums.z + chunkPos.x * chunksNums.y * chunksNums.z;
-                chunks.Add(_chunks[chunkIndex]);
-
-                foreach (var chunk in chunks)
+                foreach (Vector3Int pos in neighbourChunkPositions)
                 {
-                    _meshGenerator.SetupMesh(chunk.Mesh, _densityMap, chunk.StartPos, chunk.EndPos);
-                    chunk.UpdateMesh();
+                    if (pos != start)
+                    {
+                        index = GetChunkIndex(pos);
+                        
+                        if (index >= _chunks.Count || index < 0)
+                            continue;
+
+                        chunks.Add(_chunks[index]);
+                    }
                 }
             }
-            catch (ArgumentOutOfRangeException e)
+            catch
             {
-                Debug.Log($"Invalid index: {chunkIndex}");
+                UnityEngine.Debug.Log("Incorrect index: " + index + " | chunks total:" + _chunks.Count);
             }
+
+            foreach (var chunk in chunks)
+            {
+                _meshGenerator.SetupMesh(chunk.Mesh, _densityMap, chunk.StartPos, chunk.EndPos);
+                chunk.UpdateMesh();
+            }
+        }
+
+        private void ModifyAxesShifts(int localX, int localY, int localZ, ref Vector3Int shift)
+        {
+            if (localX == 0)
+                shift.x -= _mapSize.ChunkWidth;
+            else if (localX == 1)
+                shift.x += _mapSize.ChunkWidth;
+
+            if (localY == 0)
+                shift.y -= _mapSize.ChunkHeight;
+            else if (localY == 1)
+                shift.y += _mapSize.ChunkHeight;
+
+            if (localZ == 0)
+                shift.z -= _mapSize.ChunkDepth;
+            else if (localZ == 1)
+                shift.z += _mapSize.ChunkDepth;
+        }
+
+        private int GetChunkIndex(Vector3Int globalPos)
+        {
+            int chunkWidth = _mapSize.ChunkWidth;
+            int chunkHeight = _mapSize.ChunkHeight;
+            int chunkDepth = _mapSize.ChunkDepth;
+
+            int chunkX = globalPos.x / chunkWidth;
+            int chunkY = globalPos.y / chunkHeight;
+            int chunkZ = globalPos.z / chunkDepth;
+
+            int chunksNumY = (_mapSize.Height + chunkHeight - 1) / chunkHeight;
+            int chunksNumZ = (_mapSize.Depth + chunkDepth - 1) / chunkDepth;
+
+            int chunkIndex = chunkZ + chunkY * chunksNumZ + chunkX * chunksNumY * chunksNumZ;
+            return chunkIndex;
         }
 
         private static bool OutOfBounds(MapSize3D mapSize, int x, int y, int z)
