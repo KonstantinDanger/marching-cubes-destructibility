@@ -63,11 +63,11 @@ namespace Scripts.MarchingCubes
                 }
             }
 
-            if (mesh.vertices.Length != 0)
-                mesh.Clear(); 
+            mesh.Clear();
 
-            mesh.vertices = vertices.ToArray();
-            mesh.triangles = triangles.ToArray();
+            mesh.SetVertices(vertices);
+            mesh.SetTriangles(triangles, 0);
+
             mesh.RecalculateBounds();
             mesh.RecalculateNormals();
         }
@@ -78,7 +78,9 @@ namespace Scripts.MarchingCubes
             chunkObject.transform.parent = terrain.transform;
             Chunk3D chunk = chunkObject.AddComponent<Chunk3D>();
 
-            Mesh mesh = new();
+            Mesh mesh = new() {
+                indexFormat = UnityEngine.Rendering.IndexFormat.UInt32
+            };
 
             int finalX = startX + mapSize.ChunkWidth;
             int finalY = startY + mapSize.ChunkHeight;
@@ -132,19 +134,10 @@ namespace Scripts.MarchingCubes
                     float isoLevelA = densityMap[CachedCube[cornerA].x, CachedCube[cornerA].y, CachedCube[cornerA].z];
                     float isoLevelB = densityMap[CachedCube[cornerB].x, CachedCube[cornerB].y, CachedCube[cornerB].z];
 
-                    if (Mathf.Abs(isoLevel - isoLevelA) < 0.00001f)
-                        edgeCenterPos = CachedCube[cornerA];
-                    else if (Mathf.Abs(isoLevel - isoLevelB) < 0.00001f)
-                        edgeCenterPos = (CachedCube[cornerB]);
-                    else if (Mathf.Abs(isoLevelA - isoLevelB) < 0.00001f)
-                        edgeCenterPos = (CachedCube[cornerA]);
-                    else
-                    {
-                        float t = (isoLevel - isoLevelA) / (isoLevelB - isoLevelA);
+                    float t = Mathf.Clamp01((isoLevel - isoLevelA) / (isoLevelB - isoLevelA));
 
-                        edgeCenterPos = Vector3.Lerp(CachedCube[cornerA], CachedCube[cornerB], t);
-                    }
-
+                    edgeCenterPos = Vector3.Lerp(CachedCube[cornerA], CachedCube[cornerB], t);
+                    
                     // For low-poly shape:
                     //edgeCenterPos = Vector3.Lerp(cube[cornerA], cube[cornerB], 0.5f); 
 

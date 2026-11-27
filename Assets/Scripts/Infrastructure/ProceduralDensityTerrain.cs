@@ -21,9 +21,9 @@ namespace Scripts.MarchingCubes
 
         public void ModifyDensity(Vector3 pos, bool belowIsoSurface)
         {
-            int globalX = Mathf.FloorToInt(pos.x);
-            int globalY = Mathf.FloorToInt(pos.y);
-            int globalZ = Mathf.FloorToInt(pos.z);
+            int globalX = Mathf.RoundToInt(pos.x);
+            int globalY = Mathf.RoundToInt(pos.y);
+            int globalZ = Mathf.RoundToInt(pos.z);
 
             if (OutOfBounds(_mapSize, globalX, globalY, globalZ))
                 return;
@@ -39,13 +39,9 @@ namespace Scripts.MarchingCubes
         {
             Chunk3D startingChunk = _chunks[GetChunkIndex(globalPos)];
 
-            List<Chunk3D> chunks = new() {
-                startingChunk
-            };
-
-            int localX = Mathf.FloorToInt(globalPos.x % (_mapSize.ChunkWidth));
-            int localY = Mathf.FloorToInt(globalPos.y % (_mapSize.ChunkHeight));
-            int localZ = Mathf.FloorToInt(globalPos.z % (_mapSize.ChunkDepth));
+            int localX = globalPos.x % _mapSize.ChunkWidth;
+            int localY = globalPos.y % _mapSize.ChunkHeight;
+            int localZ = globalPos.z % _mapSize.ChunkDepth;
 
             Vector3Int start = startingChunk.StartPos;
             Vector3Int shift = start;
@@ -79,7 +75,9 @@ namespace Scripts.MarchingCubes
                         if (index >= _chunks.Count || index < 0)
                             continue;
 
-                        chunks.Add(_chunks[index]);
+                        Chunk3D chunk = _chunks[index];
+                        _meshGenerator.SetupMesh(chunk.Mesh, _densityMap, chunk.StartPos, chunk.EndPos);
+                        chunk.UpdateMesh();
                     }
                 }
             }
@@ -88,11 +86,8 @@ namespace Scripts.MarchingCubes
                 UnityEngine.Debug.Log("Incorrect index: " + index + " | chunks total:" + _chunks.Count);
             }
 
-            foreach (var chunk in chunks)
-            {
-                _meshGenerator.SetupMesh(chunk.Mesh, _densityMap, chunk.StartPos, chunk.EndPos);
-                chunk.UpdateMesh();
-            }
+            _meshGenerator.SetupMesh(startingChunk.Mesh, _densityMap, startingChunk.StartPos, startingChunk.EndPos);
+            startingChunk.UpdateMesh();
         }
 
         private void ModifyAxesShifts(int localX, int localY, int localZ, ref Vector3Int shift)

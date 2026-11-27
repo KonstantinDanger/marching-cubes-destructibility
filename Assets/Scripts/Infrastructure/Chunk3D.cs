@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace Scripts.MarchingCubes
 {
@@ -40,7 +38,7 @@ namespace Scripts.MarchingCubes
 
         public void ModifyDensity(Vector3 pos, bool belowIsoSurface, object sender)
         {
-            if (sender.GetType() == typeof(ProceduralDensityTerrain))
+            if (sender is ProceduralDensityTerrain)
                 return;
 
             _terrain.ModifyDensity(pos, belowIsoSurface);
@@ -48,11 +46,16 @@ namespace Scripts.MarchingCubes
 
         public void UpdateMesh()
         {
-            _mesh.RecalculateNormals();
-            _mesh.RecalculateBounds();
+            if (_mesh.vertexCount == 0)
+            {
+                _meshCollider.enabled = false;
+
+                return;
+            }
 
             _meshCollider.sharedMesh = null;
             _meshCollider.sharedMesh = _mesh;
+            _meshCollider.enabled = true;
         }
     }
 }
