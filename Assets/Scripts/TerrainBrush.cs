@@ -44,62 +44,70 @@ public class TerrainBrush : MonoBehaviour
         //    ResetTimer();
         //}
 
-        if(Input.GetKey(KeyCode.Mouse1))
+        if (Input.GetKey(KeyCode.Mouse1))
         {
-            Vector3[] selectedVertices = SelectVertices(ray, out HeightmapChunk chunk);
-
-            if (chunk)
-            {
-                for (int i = 0; i < selectedVertices.Length; i++)
-                {
-                    Vector3 selectedPos = selectedVertices[i];
-                    chunk.ModifyVertexHeight(selectedPos.x, selectedPos.z, -_loweringStrength, this);
-                }
-            }
-            else
-            {
-                selectedVertices = SelectVertices(ray, out Chunk3D chunk3D);
-
-                if (!chunk)
-                    return;
-
-                for (int i = 0; i < selectedVertices.Length; i++)
-                {
-                    Vector3 pos = selectedVertices[i];
-                    chunk3D.ModifyDensity(pos, belowIsoSurface: false, this);
-                }
-            }
-
+            TryRaise(ray);
             ResetTimer();
         }
 
         if (Input.GetKey(KeyCode.Mouse0))
         {
-            Vector3[] selectedVertices = SelectVertices(ray, out HeightmapChunk chunk);
-
-            if (chunk)
-            {
-                for (int i = 0; i < selectedVertices.Length; i++)
-                {
-                    Vector3 selectedPos = selectedVertices[i];
-                    chunk.ModifyVertexHeight(selectedPos.x, selectedPos.z, _raisingStrength, this);
-                }
-            }
-            else
-            {
-                selectedVertices = SelectVertices(ray, out Chunk3D chunk3D);
-
-                if (!chunk3D)
-                    return;
-
-                for (int i = 0; i < selectedVertices.Length; i++)
-                {
-                    Vector3 pos = selectedVertices[i];
-                    chunk3D.ModifyDensity(pos, belowIsoSurface: true, this);
-                }
-            }
-
+            TryLower(ray);
             ResetTimer();
+        }
+    }
+
+    private void TryLower(Ray ray)
+    {
+        Vector3[] selectedVertices = SelectVertices(ray, out HeightmapChunk chunk);
+
+        if (chunk)
+        {
+            for (int i = 0; i < selectedVertices.Length; i++)
+            {
+                Vector3 selectedPos = selectedVertices[i];
+                chunk.ModifyVertexHeight(selectedPos.x, selectedPos.z, _raisingStrength, this);
+            }
+
+            return;
+        }
+
+        selectedVertices = SelectVertices(ray, out Chunk3D chunk3D);
+
+        if (!chunk3D)
+            return;
+
+        for (int i = 0; i < selectedVertices.Length; i++)
+        {
+            Vector3 pos = selectedVertices[i];
+            chunk3D.ModifyDensity(pos, belowIsoSurface: true, this);
+        }
+    }
+
+    private void TryRaise(Ray ray)
+    {
+        Vector3[] selectedVertices = SelectVertices(ray, out HeightmapChunk chunk);
+
+        if (chunk)
+        {
+            for (int i = 0; i < selectedVertices.Length; i++)
+            {
+                Vector3 selectedPos = selectedVertices[i];
+                chunk.ModifyVertexHeight(selectedPos.x, selectedPos.z, -_loweringStrength, this);
+            }
+
+            return;
+        }
+
+        selectedVertices = SelectVertices(ray, out Chunk3D chunk3D);
+
+        if (!chunk3D)
+            return;
+
+        for (int i = 0; i < selectedVertices.Length; i++)
+        {
+            Vector3 pos = selectedVertices[i];
+            chunk3D.ModifyDensity(pos, belowIsoSurface: false, this);
         }
     }
 
@@ -188,7 +196,7 @@ public class TerrainBrush : MonoBehaviour
         Vector3[] vertices = chunk.Vertices.ToArray();
         Vector3 closest = vertices[0];
         Vector3 startingPoint = hit.point;
-        index = 0; 
+        index = 0;
 
         for (int i = 0; i < vertices.Length - 1; i++)
         {
@@ -221,8 +229,8 @@ public class TerrainBrush : MonoBehaviour
         Color color = Color.blue;
         color.a = 0.6f;
         Gizmos.color = color;
-        
-        if(_mouseWorldPosition != Vector3.zero)
+
+        if (_mouseWorldPosition != Vector3.zero)
             Gizmos.DrawSphere(_mouseWorldPosition, _brushRange);
     }
 }
